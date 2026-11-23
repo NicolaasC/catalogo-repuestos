@@ -5,8 +5,8 @@ Antes de cambiar algo visual, lee `DESIGN.md` y respétalo. Responde al usuario 
 
 ## Mapa
 - `index.html` portada (buscador grande, categorías, destacados, confianza) · `catalogo.html` catálogo con vista rápida ·
-  `privacidad.html` política Ley 1581 · `admin.html` panel privado de cotizaciones (Supabase Auth).
-- `config.js`: WhatsApp, Supabase (clave pública), datos legales, destacados, sección de confianza.
+  `privacidad.html` política Ley 1581 · `admin.html` panel privado: cotizaciones y productos (Supabase Auth).
+- `config.js`: WhatsApp, Supabase (clave pública), datos legales y sección de confianza. Los destacados son la columna `destacado`.
 - Productos: tabla `public.productos` en Supabase, gestionada por el dueño desde `/admin` (fotos en el bucket `productos`).
   El build genera `dist/productos.js` (`window.PRODUCTOS`) leyendo solo los `publicado = true`. No hay productos.js en el repo.
 - `app.js` utilidades compartidas (card, buscador con sugerencias, zoom); `cotizacion.js/.css` lista de cotización.
@@ -17,7 +17,7 @@ Antes de cambiar algo visual, lee `DESIGN.md` y respétalo. Responde al usuario 
 
 ## Reglas
 - Rutas siempre absolutas (`/img/...`, `/catalogo`): las páginas de producto viven en `/producto/`.
-- No pases imágenes por el contexto: usa `tools/optimizar-imagenes.mjs` y edita solo `productos.js`.
+- No pases imágenes por el contexto: el dueño sube fotos desde `/admin`; tú editas productos con SQL, nunca subiendo imágenes.
 - Cualquier campo nuevo que pida datos personales requiere actualizar `privacidad.html` y `POLITICA` en `cotizacion.js`.
 - Probar primero a 390px de ancho.
 
