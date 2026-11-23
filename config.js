@@ -6,11 +6,7 @@ window.CONFIG = {
   // Número de WhatsApp con código de país, solo dígitos. Ej: "573001234567".
   // Mientras esté vacío, el botón abre WhatsApp para que el cliente elija a quién enviar.
   whatsapp: "573205530354",
-  // Productos que aparecen en la página de inicio (por id).
-  destacados: [
-    "kit-filtro-aps", "compresor-aire-knorr", "kit-embrague-seis-resortes",
-    "kit-filtro-aire", "sombrilla-retarder", "kit-escualizacion-18-dientes"
-  ],
+  // Los productos y los destacados se gestionan desde el panel /admin (tabla "productos" en Supabase).
   // Dirección pública del sitio (para enlaces al compartir y para Google).
   sitio: "https://catalogo-repuestos-eight.vercel.app",
   // Sección "Por qué cotizar con nosotros" de la página de inicio.

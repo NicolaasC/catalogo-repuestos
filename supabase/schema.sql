@@ -80,3 +80,13 @@ create policy "admin_borra" on public.cotizaciones for delete to authenticated u
 
 -- Para dar acceso: crea el usuario en Authentication → Users y luego:
 -- insert into public.admins (user_id) select id from auth.users where email = 'TU_CORREO';
+
+-- ------------------------------------------------------------------
+-- v1.2 · Productos gestionados desde /admin + fotos en Storage
+-- (ver migraciones en el proyecto: productos_y_fotos, publicaciones, productos_respuesta, fotos_admin_lee)
+-- ------------------------------------------------------------------
+-- Tabla public.productos: id (slug), nombre, marca, referencia, ref_por_confirmar, categoria, compatible, descripcion,
+--   imagenes text[], estado_ficha ('pendiente' | 'revisar' | 'completa'), pregunta, respuesta, publicado, destacado,
+--   orden, creado_en, actualizado_en.  RLS: el público ve solo publicados; el admin (es_admin()) crea, edita y borra.
+-- Bucket storage "productos": público para leer; solo el admin sube, lee la lista y borra.
+-- Tabla public.publicaciones: registro de cada «Publicar cambios» (Edge Function supabase/functions/publicar).

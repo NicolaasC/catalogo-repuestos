@@ -237,8 +237,7 @@
   document.getElementById('cats').innerHTML = cats.map(c =>
     `<a class="cat" href="/catalogo?cat=${encodeURIComponent(c)}">${icono(c)}<div><b>${esc(c)}</b><br><small>${n(c)} ${n(c)===1?'repuesto':'repuestos'}</small></div></a>`).join('');
 
-  const ids = (CONFIG.destacados || []);
-  const dest = ids.map(id => P.find(p => p.id === id)).filter(Boolean);
+  const dest = P.filter(p => p.destacado);
   document.getElementById('dest').innerHTML = (dest.length ? dest : P.slice(-6)).map(card).join('');
 
   const col = (dest.length >= 3 ? dest : P).slice(0, 3);

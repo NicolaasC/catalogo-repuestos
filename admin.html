@@ -3,30 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de cotizaciones · Conexión Scania</title>
+<title>Panel · Conexión Scania</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#101D32">
 <link rel="stylesheet" href="/styles.css">
 <style>
+  [hidden]{display:none!important}
   body{min-height:100vh}
-  .bar{position:sticky;top:0;z-index:20;background:rgba(16,29,50,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .bar .wrap{display:flex;align-items:center;gap:16px;height:64px}
-  .bar h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:24px;margin-right:auto}
+  .bar{position:sticky;top:0;z-index:20;background:rgba(16,29,50,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;gap:14px;height:60px}
+  .bar h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:22px;margin-right:auto;white-space:nowrap}
   .bar h1 span{color:var(--red2)}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 4px}
+  .tab{background:none;border:0;border-bottom:3px solid transparent;color:#c3c9d2;font-family:var(--display);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.04em;padding:14px 14px 11px;cursor:pointer}
+  .tab.on{color:#fff;border-bottom-color:var(--red)}
+  .tab b{font-family:var(--body);font-size:12px;background:var(--navy3);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:2px}
   .lnk{background:none;border:0;color:#c9ced6;font:inherit;font-size:14px;cursor:pointer}
   .lnk:hover{color:#fff}
   .login{max-width:380px;margin:12vh auto 0;background:var(--navy2);border:1px solid var(--line);border-top:4px solid var(--red);border-radius:16px;padding:28px}
   .login h2{font-family:var(--display);text-transform:uppercase;font-size:30px;margin-bottom:6px}
   .login p{color:var(--gray);font-size:14px;margin-bottom:18px}
   label{display:block;font-size:13px;color:#d3d8df;margin-bottom:12px}
-  input,select,textarea{display:block;width:100%;margin-top:5px;background:var(--navy);border:1px solid var(--line);color:var(--white);padding:11px 12px;border-radius:10px;font:inherit;font-size:15px}
+  label small{color:var(--gray)}
+  input,select,textarea{display:block;width:100%;margin-top:5px;background:var(--navy);border:1px solid var(--line);color:var(--white);padding:11px 12px;border-radius:10px;font:inherit;font-size:16px}
+  input[type=checkbox]{display:inline-block;width:20px;height:20px;margin:0 8px 0 0;vertical-align:-4px;accent-color:var(--red)}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent}
   .err{color:#ff8a8a;font-size:13px;min-height:18px;margin:4px 0 10px}
-  .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:18px 0}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 0}
   .tools input{flex:1 1 240px;margin:0}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
   .chip{background:var(--navy2);border:1px solid var(--line);color:#c3c9d2;padding:8px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
   .chip.on{background:var(--red);border-color:var(--red);color:#fff}
   .chip b{opacity:.75;margin-left:4px}
+  .vacio{color:var(--gray);text-align:center;padding:60px 0}
+  .ok{color:#7be3a4;font-size:12px}
+  .btn-sm{padding:9px 14px;font-size:14px}
+
+  /* Cotizaciones */
   .list{display:grid;gap:14px;padding-bottom:60px}
   .q{background:var(--navy2);border:1px solid var(--line);border-left:4px solid var(--gray);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
   .q[data-e="nueva"]{border-left-color:var(--red)} .q[data-e="cotizada"]{border-left-color:#f0b429}
@@ -42,14 +55,51 @@
   .q .btn{padding:10px 14px;font-size:14px;flex:1 1 auto;justify-content:center}
   .del{background:none;border:0;color:var(--gray);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;align-self:flex-end}
   .del:hover{color:#ff8a8a}
-  .vacio{color:var(--gray);text-align:center;padding:60px 0}
-  .ok{color:#7be3a4;font-size:12px}
   @media (max-width:760px){.q{grid-template-columns:1fr}}
+
+  /* Productos */
+  .pub{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:16px;font-size:14px}
+  .pub.pend{border-color:#f0b429;background:rgba(240,180,41,.08)}
+  .pub span{margin-right:auto}
+  .prods{display:grid;gap:8px;padding-bottom:30px}
+  .pr{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:8px 12px 8px 8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%}
+  .pr:hover{border-color:rgba(214,41,56,.6)}
+  .pr img{width:56px;height:56px;object-fit:cover;border-radius:8px;background:#0c1626}
+  .pr b{display:block;font-size:15px;line-height:1.25}
+  .pr small{color:var(--gray);font-size:12px}
+  .pr.oculto{opacity:.55}
+  .est{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:4px 9px;white-space:nowrap}
+  .est.pendiente{background:rgba(240,180,41,.15);color:#f5c451}
+  .est.revisar{background:rgba(239,59,74,.18);color:#ff8a8a}
+  .est.completa{background:rgba(37,211,102,.13);color:#7be3a4}
+  .mas{display:block;margin:0 auto 60px}
+  dialog{border:0;border-radius:16px;background:var(--navy2);color:var(--white);width:min(640px,calc(100% - 16px));max-height:calc(100dvh - 16px);padding:0;margin:auto}
+  dialog::backdrop{background:rgba(5,10,18,.8)}
+  .ed-h{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;background:var(--navy2);border-bottom:1px solid var(--line);padding:14px 18px}
+  .ed-h h2{font-family:var(--display);text-transform:uppercase;font-size:24px}
+  .ed-b{padding:16px 18px 6px}
+  .ed-f{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;background:var(--navy2);border-top:1px solid var(--line);padding:12px 18px}
+  .ed-f .btn{justify-content:center}
+  .fotos{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+  .foto{position:relative;width:92px;height:92px;border-radius:10px;overflow:hidden;background:#0c1626;border:2px solid transparent}
+  .foto:first-child{border-color:var(--red)}
+  .foto img{width:100%;height:100%;object-fit:cover}
+  .foto button{position:absolute;border:0;background:rgba(5,10,18,.8);color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1}
+  .foto .x{top:4px;right:4px} .foto .pp{bottom:4px;left:4px;font-size:12px}
+  .foto.subiendo::after{content:"Subiendo…";position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,10,18,.7);font-size:12px}
+  .add-foto{width:92px;height:92px;border:2px dashed rgba(244,245,247,.3);border-radius:10px;display:grid;place-items:center;text-align:center;font-size:12px;color:#c3c9d2;cursor:pointer;padding:6px}
+  .add-foto input{display:none}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .preg{background:rgba(239,59,74,.1);border:1px solid rgba(239,59,74,.45);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+  .preg b{display:block;color:#ff8a8a;margin-bottom:4px}
+  .checks{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 12px;font-size:14px}
+  .ayuda{color:var(--gray);font-size:12px;margin:-6px 0 12px}
+  @media (max-width:560px){.dos{grid-template-columns:1fr}.bar h1{font-size:18px}}
 </style>
 </head>
 <body>
-<div class="bar"><div class="wrap"><h1>Panel de <span>cotizaciones</span></h1>
-  <button class="lnk" id="recargar" hidden>↻ Actualizar</button><button class="lnk" id="salir" hidden>Salir</button></div></div>
+<div class="bar"><div class="wrap"><h1>Panel <span>Conexión Scania</span></h1>
+  <a class="lnk" href="/" target="_blank">Ver sitio ↗</a><button class="lnk" id="salir" hidden>Salir</button></div></div>
 
 <main class="wrap">
   <form class="login" id="login" hidden>
@@ -61,14 +111,69 @@
     <button class="btn btn-red" style="width:100%;justify-content:center">Entrar</button>
   </form>
 
-  <section id="panel" hidden>
-    <div class="tools">
-      <input id="buscar" type="search" placeholder="Buscar por nombre, ciudad, código, repuesto…">
-      <div id="filtros" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-    </div>
-    <div class="list" id="lista"></div>
-  </section>
+  <div id="app" hidden>
+    <nav class="tabs"><button class="tab on" data-tab="cot">Cotizaciones <b id="n-cot">0</b></button><button class="tab" data-tab="prod">Productos <b id="n-prod">0</b></button></nav>
+
+    <section id="cot">
+      <div class="tools">
+        <input id="buscar" type="search" placeholder="Buscar por nombre, ciudad, código, repuesto…">
+        <div class="chips" id="filtros"></div>
+        <button class="lnk" id="recargar">↻ Actualizar</button>
+      </div>
+      <div class="list" id="lista"></div>
+    </section>
+
+    <section id="prod" hidden>
+      <div class="pub" id="pub"></div>
+      <div class="tools">
+        <input id="pbuscar" type="search" placeholder="Buscar producto, referencia o marca…">
+        <button class="btn btn-red btn-sm" id="nuevo">+ Nuevo producto</button>
+        <div class="chips" id="pfiltros" style="flex-basis:100%"></div>
+      </div>
+      <div class="prods" id="plista"></div>
+      <button class="btn btn-ghost btn-sm mas" id="pmas" hidden>Ver más</button>
+    </section>
+  </div>
 </main>
+
+<dialog id="ed">
+  <form id="edf" novalidate>
+    <div class="ed-h"><h2 id="ed-t">Nuevo producto</h2><button type="button" class="lnk" id="ed-x" style="font-size:26px" aria-label="Cerrar">×</button></div>
+    <div class="ed-b">
+      <div class="preg" id="ed-preg" hidden><b>Pregunta de Claude para revisar juntos</b><span id="ed-preg-t"></span>
+        <label style="margin:10px 0 0">Tu respuesta<textarea name="respuesta" rows="2" maxlength="1000" placeholder="Ej: es la referencia 1234567, viene para motor DC13"></textarea></label></div>
+      <label>Fotos <small>(la primera es la principal; máximo 6)</small></label>
+      <div class="fotos" id="ed-fotos"></div>
+      <label>Nombre del repuesto *<input name="nombre" required minlength="2" maxlength="120" placeholder="Ej: Bomba de agua motor DC13"></label>
+      <div class="dos">
+        <label>Categoría *<select name="categoria" required></select></label>
+        <label id="cat-otra" hidden>Nueva categoría<input name="categoria_otra" maxlength="60"></label>
+        <label>Marca <small>(opcional)</small><input name="marca" maxlength="80" placeholder="Ej: Scania, WABCO, Elring"></label>
+      </div>
+      <label>Referencia<input name="referencia" maxlength="160" placeholder="Ej: 1889797"></label>
+      <div class="checks"><label style="margin:0"><input type="checkbox" name="ref_por_confirmar">No conozco la referencia (Claude la investiga)</label></div>
+      <label>Compatible con <small>(opcional)</small><input name="compatible" maxlength="200" placeholder="Ej: Camiones Scania serie R, motor DC13"></label>
+      <label>Descripción <small>(opcional: si la dejas vacía, Claude la redacta)</small><textarea name="descripcion" rows="3" maxlength="1200"></textarea></label>
+      <label>Estado de la ficha
+        <select name="estado_ficha">
+          <option value="auto">Automático</option>
+          <option value="pendiente">Pendiente: Claude la completa</option>
+          <option value="revisar">Revisar juntos</option>
+          <option value="completa">Completa</option>
+        </select></label>
+      <p class="ayuda">En automático queda «Pendiente» si falta la descripción o la referencia, o si respondiste una pregunta de Claude.</p>
+      <div class="checks"><label style="margin:0"><input type="checkbox" name="publicado" checked>Visible en el catálogo</label>
+        <label style="margin:0"><input type="checkbox" name="destacado">Destacado en la portada</label></div>
+      <p class="err" id="ed-err"></p>
+    </div>
+    <div class="ed-f">
+      <button type="button" class="del" id="ed-del" hidden>Eliminar producto</button>
+      <span style="flex:1"></span>
+      <button type="button" class="btn btn-ghost btn-sm" id="ed-cancel">Cancelar</button>
+      <button class="btn btn-red btn-sm" id="ed-ok">Guardar</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="/config.js"></script>
 <script src="/vendor/supabase-2.119.0.js"></script>
@@ -76,22 +181,18 @@
   const C = window.CONFIG, sb = supabase.createClient(C.supabase.url, C.supabase.key);
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const ESTADOS = ['nueva', 'cotizada', 'ganada', 'perdida', 'descartada'];
-  let filas = [], filtro = 'nueva';
+  const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const ruta = u => !u || /^(https?:|\/)/.test(u) ? u : '/' + u;
 
-  // Celular colombiano de 10 dígitos → formato internacional para WhatsApp.
-  const telWa = t => { let d = String(t).replace(/\D/g, ''); if (d.length === 10 && d[0] === '3') d = '57' + d; return d; };
-  const fecha = s => new Date(s).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
-
+  // ================= Sesión =================
   async function iniciar(){
     const { data: { session } } = await sb.auth.getSession();
-    if (!session){ $('login').hidden = false; $('panel').hidden = $('salir').hidden = $('recargar').hidden = true; return; }
+    if (!session){ $('login').hidden = false; $('app').hidden = $('salir').hidden = true; return; }
     const { data: admin } = await sb.rpc('es_admin');
     if (!admin){ $('login').hidden = false; $('lerr').textContent = 'Este usuario no tiene permiso de administrador.'; await sb.auth.signOut(); return; }
-    $('login').hidden = true; $('panel').hidden = $('salir').hidden = $('recargar').hidden = false;
-    cargar();
+    $('login').hidden = true; $('app').hidden = $('salir').hidden = false;
+    cargar(); cargarProductos();
   }
-
   $('login').onsubmit = async e => {
     e.preventDefault(); $('lerr').textContent = '';
     const f = new FormData(e.target);
@@ -100,6 +201,18 @@
     iniciar();
   };
   $('salir').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  document.querySelector('.tabs').onclick = e => {
+    const t = e.target.closest('[data-tab]'); if (!t) return;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    $('cot').hidden = t.dataset.tab !== 'cot'; $('prod').hidden = t.dataset.tab !== 'prod';
+    if (t.dataset.tab === 'prod') estadoPublicacion();
+  };
+
+  // ================= Cotizaciones =================
+  const ESTADOS = ['nueva', 'cotizada', 'ganada', 'perdida', 'descartada'];
+  let filas = [], filtro = 'nueva';
+  const telWa = t => { let d = String(t).replace(/\D/g, ''); if (d.length === 10 && d[0] === '3') d = '57' + d; return d; };
+  const fecha = s => new Date(s).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
   $('recargar').onclick = () => cargar();
   $('buscar').oninput = pintar;
 
@@ -109,13 +222,12 @@
     if (error) { $('lista').innerHTML = `<p class="vacio">No se pudieron cargar: ${esc(error.message)}</p>`; return; }
     filas = data; pintar();
   }
-
   function pintar(){
     const n = e => filas.filter(f => f.estado === e).length;
+    $('n-cot').textContent = n('nueva');
     $('filtros').innerHTML = ['todas', ...ESTADOS].map(e => `<button class="chip${e === filtro ? ' on' : ''}" data-f="${e}">${e[0].toUpperCase() + e.slice(1)}<b>${e === 'todas' ? filas.length : n(e)}</b></button>`).join('');
     const q = $('buscar').value.trim().toLowerCase();
-    const lista = filas.filter(f => (filtro === 'todas' || f.estado === filtro) &&
-      (!q || JSON.stringify(f).toLowerCase().includes(q)));
+    const lista = filas.filter(f => (filtro === 'todas' || f.estado === filtro) && (!q || JSON.stringify(f).toLowerCase().includes(q)));
     $('lista').innerHTML = lista.length ? lista.map(f => `
       <article class="q" data-e="${esc(f.estado)}" data-id="${esc(f.id)}">
         <div>
@@ -138,10 +250,8 @@
         </div>
       </article>`).join('') : '<p class="vacio">No hay cotizaciones en este filtro.</p>';
   }
-
   $('filtros').onclick = e => { const b = e.target.closest('[data-f]'); if (b){ filtro = b.dataset.f; pintar(); } };
-
-  async function guardar(art, cambios){
+  async function guardarCot(art, cambios){
     const id = art.dataset.id, ok = art.querySelector('[data-ok]');
     const { error } = await sb.from('cotizaciones').update({ ...cambios, actualizado_en: new Date().toISOString() }).eq('id', id);
     ok.textContent = error ? '⚠ No se guardó: ' + error.message : '✓ Guardado';
@@ -149,7 +259,7 @@
   }
   $('lista').addEventListener('change', e => {
     const art = e.target.closest('.q'), campo = e.target.dataset.campo; if (!art || !campo) return;
-    guardar(art, { [campo]: e.target.value }).then(() => { if (campo === 'estado') art.dataset.e = e.target.value; });
+    guardarCot(art, { [campo]: e.target.value }).then(() => { if (campo === 'estado') { art.dataset.e = e.target.value; $('n-cot').textContent = filas.filter(f => f.estado === 'nueva').length; } });
   });
   $('lista').addEventListener('click', async e => {
     if (!e.target.closest('[data-borrar]')) return;
@@ -160,7 +270,168 @@
     filas = filas.filter(f => f.id !== art.dataset.id); pintar();
   });
 
-  sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') { $('panel').hidden = true; } });
+  // ================= Productos =================
+  const CATS_BASE = ['Motor', 'Filtros', 'Frenos y aire', 'Suspensión', 'Refrigeración', 'Embrague', 'Caja y retarder', 'Diferencial', 'Dirección', 'Ejes y bocines', 'Eléctrico', 'Carrocería'];
+  const ETIQ = { pendiente: 'Pendiente', revisar: 'Revisar juntos', completa: 'Completa' };
+  let prods = [], pfiltro = 'todos', limite = 40, ultimaPub = null, borrados = 0;
+
+  async function cargarProductos(){
+    $('plista').innerHTML = '<p class="vacio">Cargando…</p>';
+    const { data, error } = await sb.from('productos').select('*').order('creado_en', { ascending: false });
+    if (error) { $('plista').innerHTML = `<p class="vacio">No se pudieron cargar: ${esc(error.message)}</p>`; return; }
+    prods = data; pintarProductos(); estadoPublicacion();
+  }
+  async function estadoPublicacion(){
+    const { data } = await sb.from('publicaciones').select('creado_en').order('creado_en', { ascending: false }).limit(1);
+    ultimaPub = data?.[0]?.creado_en || null;
+    const cambios = prods.filter(p => !ultimaPub || p.actualizado_en > ultimaPub).length + borrados;
+    $('pub').className = 'pub' + (cambios ? ' pend' : '');
+    $('pub').innerHTML = cambios
+      ? `<span><b>${cambios} ${cambios === 1 ? 'cambio' : 'cambios'} sin publicar.</b> Cuando termines de editar, publica para que aparezcan en el catálogo.</span><button class="btn btn-red btn-sm" id="publicar">Publicar cambios</button>`
+      : `<span>✓ El catálogo está al día${ultimaPub ? ' · última publicación ' + fecha(ultimaPub) : ''}.</span>`;
+    const b = $('publicar'); if (b) b.onclick = publicar;
+  }
+  async function publicar(){
+    const b = $('publicar'); b.disabled = true; b.textContent = 'Publicando…';
+    const { data, error } = await sb.functions.invoke('publicar', { method: 'POST' });
+    if (error) {
+      let msg = error.message; try { msg = (await error.context.json()).error || msg; } catch {}
+      alert('No se pudo publicar: ' + msg); b.disabled = false; b.textContent = 'Publicar cambios'; return;
+    }
+    borrados = 0; $('pub').className = 'pub'; $('pub').innerHTML = `<span>🚀 ${esc(data.mensaje)}</span>`;
+    setTimeout(estadoPublicacion, 4000);
+  }
+
+  function pintarProductos(){
+    const cuenta = { todos: prods.length, pendiente: 0, revisar: 0, completa: 0, ocultos: 0 };
+    prods.forEach(p => { cuenta[p.estado_ficha]++; if (!p.publicado) cuenta.ocultos++; });
+    $('n-prod').textContent = prods.length;
+    const nombres = { todos: 'Todos', revisar: 'Revisar juntos', pendiente: 'Pendientes (Claude)', completa: 'Completos', ocultos: 'Ocultos' };
+    $('pfiltros').innerHTML = Object.keys(nombres).map(k => `<button class="chip${k === pfiltro ? ' on' : ''}" data-f="${k}">${nombres[k]}<b>${cuenta[k]}</b></button>`).join('');
+    const terms = norm($('pbuscar').value).split(/\s+/).filter(Boolean);
+    const lista = prods.filter(p => (pfiltro === 'todos' || (pfiltro === 'ocultos' ? !p.publicado : p.estado_ficha === pfiltro)) &&
+      terms.every(w => norm([p.nombre, p.referencia, p.marca, p.categoria, p.id].join(' ')).includes(w)));
+    $('plista').innerHTML = lista.length ? lista.slice(0, limite).map(p => `
+      <button type="button" class="pr${p.publicado ? '' : ' oculto'}" data-id="${esc(p.id)}">
+        <img src="${esc(ruta(p.imagenes?.[0]) || '/img/sin-foto.svg')}" alt="" loading="lazy">
+        <span><b>${esc(p.nombre)}${p.destacado ? ' ★' : ''}</b><small>${esc([p.categoria, p.marca, p.referencia ? 'Ref. ' + p.referencia : (p.ref_por_confirmar ? 'Ref. por investigar' : '')].filter(Boolean).join(' · '))}${p.publicado ? '' : ' · OCULTO'}</small></span>
+        <span class="est ${p.estado_ficha}">${ETIQ[p.estado_ficha]}</span>
+      </button>`).join('') : '<p class="vacio">No hay productos en este filtro.</p>';
+    $('pmas').hidden = lista.length <= limite;
+  }
+  $('pfiltros').onclick = e => { const b = e.target.closest('[data-f]'); if (b){ pfiltro = b.dataset.f; limite = 40; pintarProductos(); } };
+  $('pbuscar').oninput = () => { limite = 40; pintarProductos(); };
+  $('pmas').onclick = () => { limite += 40; pintarProductos(); };
+  $('plista').onclick = e => { const b = e.target.closest('[data-id]'); if (b) abrirEditor(prods.find(p => p.id === b.dataset.id)); };
+  $('nuevo').onclick = () => abrirEditor(null);
+
+  // ---------- Editor ----------
+  const ed = $('ed'), F = $('edf');
+  let actual = null, fotosEd = [], subiendo = 0;
+
+  function opcionesCategoria(sel){
+    const cats = [...new Set([...CATS_BASE, ...prods.map(p => p.categoria)])].sort((a, b) => a.localeCompare(b, 'es'));
+    F.categoria.innerHTML = '<option value="">Elige…</option>' + cats.map(c => `<option${c === sel ? ' selected' : ''}>${esc(c)}</option>`).join('') + '<option value="__otra">Otra categoría…</option>';
+  }
+  F.categoria.onchange = () => { $('cat-otra').hidden = F.categoria.value !== '__otra'; };
+
+  function abrirEditor(p){
+    actual = p; F.reset(); $('ed-err').textContent = '';
+    $('ed-t').textContent = p ? 'Editar producto' : 'Nuevo producto';
+    opcionesCategoria(p?.categoria); $('cat-otra').hidden = true;
+    for (const k of ['nombre', 'marca', 'referencia', 'compatible', 'descripcion', 'respuesta']) F[k].value = p?.[k] || '';
+    F.ref_por_confirmar.checked = !!p?.ref_por_confirmar;
+    F.publicado.checked = p ? p.publicado : true; F.destacado.checked = !!p?.destacado;
+    F.estado_ficha.value = 'auto';
+    $('ed-preg').hidden = !p?.pregunta; $('ed-preg-t').textContent = p?.pregunta || '';
+    $('ed-del').hidden = !p;
+    fotosEd = (p?.imagenes || []).map(u => ({ url: ruta(u), guardada: u })); pintarFotos();
+    ed.showModal();
+  }
+  const cerrar = () => { if (subiendo) return alert('Espera a que terminen de subir las fotos.'); ed.close(); };
+  $('ed-x').onclick = $('ed-cancel').onclick = cerrar;
+  ed.addEventListener('cancel', e => { e.preventDefault(); cerrar(); });
+
+  function pintarFotos(){
+    $('ed-fotos').innerHTML = fotosEd.map((f, i) => `<div class="foto${f.subiendo ? ' subiendo' : ''}"><img src="${esc(f.url)}" alt="">
+        <button type="button" class="x" data-x="${i}" aria-label="Quitar foto">×</button>${i ? `<button type="button" class="pp" data-pp="${i}" aria-label="Usar como principal">★</button>` : ''}</div>`).join('') +
+      (fotosEd.length < 6 ? `<label class="add-foto">+ Agregar fotos<input type="file" accept="image/*" multiple id="ed-file"></label>` : '');
+    const inp = $('ed-file'); if (inp) inp.onchange = () => subirFotos([...inp.files]);
+  }
+  $('ed-fotos').onclick = e => {
+    const x = e.target.closest('[data-x]'), pp = e.target.closest('[data-pp]');
+    if (x) { fotosEd.splice(+x.dataset.x, 1); pintarFotos(); }
+    if (pp) { const [f] = fotosEd.splice(+pp.dataset.pp, 1); fotosEd.unshift(f); pintarFotos(); }
+  };
+
+  // Reduce la foto en el propio celular antes de subirla (máx. 1400 px, WebP o JPEG ~150 KB).
+  async function comprimir(file){
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const k = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
+    const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k);
+    cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+    let blob = await new Promise(ok => cv.toBlob(ok, 'image/webp', .82));
+    if (!blob || blob.type !== 'image/webp') blob = await new Promise(ok => cv.toBlob(ok, 'image/jpeg', .85));
+    return blob;
+  }
+  async function subirFotos(files){
+    for (const file of files.slice(0, 6 - fotosEd.length)){
+      const item = { url: URL.createObjectURL(file), subiendo: true }; fotosEd.push(item); subiendo++; pintarFotos();
+      try {
+        const blob = await comprimir(file), ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+        const path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await sb.storage.from('productos').upload(path, blob, { contentType: blob.type, cacheControl: '31536000' });
+        if (error) throw error;
+        item.guardada = sb.storage.from('productos').getPublicUrl(path).data.publicUrl; item.subida = path;
+      } catch (err) { fotosEd.splice(fotosEd.indexOf(item), 1); alert('No se pudo subir una foto: ' + (err.message || err)); }
+      finally { item.subiendo = false; subiendo--; pintarFotos(); }
+    }
+  }
+
+  const slug = s => norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'producto';
+  function idUnico(nombre){ let base = slug(nombre), id = base, n = 2; while (prods.some(p => p.id === id)) id = `${base}-${n++}`; return id; }
+
+  F.onsubmit = async e => {
+    e.preventDefault(); $('ed-err').textContent = '';
+    if (subiendo) { $('ed-err').textContent = 'Espera a que terminen de subir las fotos.'; return; }
+    const categoria = F.categoria.value === '__otra' ? F.categoria_otra.value.trim() : F.categoria.value;
+    if (F.nombre.value.trim().length < 2 || !categoria) { $('ed-err').textContent = 'El nombre y la categoría son obligatorios.'; return; }
+    const v = k => F[k].value.trim() || null;
+    const datos = { nombre: v('nombre'), categoria, marca: v('marca'), referencia: v('referencia'), compatible: v('compatible'),
+      descripcion: v('descripcion'), respuesta: v('respuesta'), ref_por_confirmar: F.ref_por_confirmar.checked && !v('referencia'),
+      publicado: F.publicado.checked, destacado: F.destacado.checked, imagenes: fotosEd.map(f => f.guardada) };
+    let est = F.estado_ficha.value;
+    if (est === 'auto') {
+      // 1) Respondiste una pregunta de Claude → vuelve a Claude.  2) Falta descripción o referencia → Claude la completa.
+      // 3) Sigue la duda sin responder → revisar.  4) Si no, completa.
+      const respondio = actual?.estado_ficha === 'revisar' && datos.respuesta && datos.respuesta !== actual.respuesta;
+      est = respondio || !datos.descripcion || datos.ref_por_confirmar ? 'pendiente'
+          : actual?.estado_ficha === 'revisar' ? 'revisar' : 'completa';
+    }
+    datos.estado_ficha = est;
+    $('ed-ok').disabled = true;
+    const q = actual ? sb.from('productos').update(datos).eq('id', actual.id).select().single()
+                     : sb.from('productos').insert({ id: idUnico(datos.nombre), orden: 1000, ...datos }).select().single();
+    const { data, error } = await q; $('ed-ok').disabled = false;
+    if (error) { $('ed-err').textContent = 'No se guardó: ' + error.message; return; }
+    // Borra del almacenamiento las fotos que se quitaron.
+    const quitadas = (actual?.imagenes || []).filter(u => !datos.imagenes.includes(u)).map(rutaStorage).filter(Boolean);
+    if (quitadas.length) sb.storage.from('productos').remove(quitadas);
+    if (actual) Object.assign(actual, data); else prods.unshift(data);
+    ed.close(); pintarProductos(); estadoPublicacion();
+  };
+  const rutaStorage = u => (String(u).split('/storage/v1/object/public/productos/')[1]) || null;
+
+  $('ed-del').onclick = async () => {
+    if (!confirm(`¿Eliminar "${actual.nombre}" del catálogo? Esto borra también sus fotos y no se puede deshacer. Si solo quieres ocultarlo, desmarca «Visible en el catálogo».`)) return;
+    const { error } = await sb.from('productos').delete().eq('id', actual.id);
+    if (error) return alert('No se pudo eliminar: ' + error.message);
+    const fotos = (actual.imagenes || []).map(rutaStorage).filter(Boolean);
+    if (fotos.length) await sb.storage.from('productos').remove(fotos);
+    prods = prods.filter(p => p !== actual); borrados++; ed.close(); pintarProductos(); estadoPublicacion();
+  };
+
+  sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') $('app').hidden = true; });
   iniciar();
 </script>
 </body>

@@ -16,7 +16,8 @@
   // Fotos del producto: usa "imagenes: [...]" si existe; si no, "imagen" (+ "imagen2" opcional).
   // Las rutas son absolutas para que funcionen también en /producto/<id>.
   const ruta = u => !u || /^(https?:|\/)/.test(u) ? u : '/' + u;
-  const fotos = p => (Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen, p.imagen2]).filter(Boolean).map(ruta);
+  const fotos = p => { const f = (Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen, p.imagen2]).filter(Boolean).map(ruta);
+    return f.length ? f : ['/img/sin-foto.svg']; };
   const urlProducto = p => '/producto/' + encodeURIComponent(p.id);
   const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 

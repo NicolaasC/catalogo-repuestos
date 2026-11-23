@@ -3,7 +3,7 @@
 //  - genera una página por producto en /producto/<id> (con vista previa para WhatsApp y Google),
 //  - genera la imagen de vista previa (og/<id>.jpg), sitemap.xml y robots.txt.
 // Uso: node tools/build.mjs   (Vercel lo ejecuta solo en cada despliegue)
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
 import sharp from 'sharp';
@@ -12,30 +12,53 @@ const RAIZ = new URL('..', import.meta.url).pathname, DIST = join(RAIZ, 'dist');
 const NO_PUBLICAR = new Set(['dist', 'tools', 'supabase', 'node_modules', '.git', '.github', '.vercel', 'fotos',
   'DESIGN.md', 'README.md', 'CLAUDE.md', 'package.json', 'package-lock.json', 'vercel.json', '.gitignore', '.vercelignore']);
 
-// Lee config.js y productos.js tal como los lee el navegador.
+// Lee config.js tal como lo lee el navegador.
 const ctx = { window: {} }; vm.createContext(ctx);
-for (const f of ['config.js', 'productos.js']) vm.runInContext(readFileSync(join(RAIZ, f), 'utf8'), ctx);
-const C = ctx.window.CONFIG, P = ctx.window.PRODUCTOS, SITIO = C.sitio.replace(/\/$/, '');
+vm.runInContext(readFileSync(join(RAIZ, 'config.js'), 'utf8'), ctx);
+const C = ctx.window.CONFIG, SITIO = C.sitio.replace(/\/$/, '');
+
+// Los productos viven en Supabase (se gestionan desde /admin). Solo se publican los marcados como publicados.
+// Si Supabase no responde, el build falla a propósito: Vercel mantiene la versión anterior del sitio.
+const CAMPOS = 'id,nombre,marca,referencia,categoria,compatible,descripcion,imagenes,destacado';
+const r = await fetch(`${C.supabase.url}/rest/v1/productos?select=${CAMPOS}&publicado=eq.true&order=orden.asc,creado_en.desc`,
+  { headers: { apikey: C.supabase.key } });
+if (!r.ok) throw new Error(`No se pudieron leer los productos de Supabase (${r.status}): ${await r.text()}`);
+const P = (await r.json()).map(p => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== null && v !== '' && !(Array.isArray(v) && !v.length))));
+if (!P.length) throw new Error('Supabase devolvió 0 productos publicados; no se publica un catálogo vacío.');
+for (const p of P) if (!p.imagenes?.length) console.warn(`⚠ "${p.id}" no tiene fotos.`);
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ruta = u => /^(https?:|\/)/.test(u) ? u : '/' + u;
 const fotos = p => (Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen, p.imagen2]).filter(Boolean).map(ruta);
+const SIN_FOTO = '/img/sin-foto.svg';
+// Descarga una foto: las del repositorio están en disco, las subidas desde el panel están en Supabase Storage.
+const leerFoto = async u => /^https?:/.test(u) ? Buffer.from(await (await fetch(u)).arrayBuffer()) : readFileSync(join(RAIZ, u));
 const corto = (s, n) => (s = String(s || '')).length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
 
 rmSync(DIST, { recursive: true, force: true });
 mkdirSync(join(DIST, 'producto'), { recursive: true });
 mkdirSync(join(DIST, 'og'), { recursive: true });
 for (const f of readdirSync(RAIZ)) if (!NO_PUBLICAR.has(f) && !f.startsWith('.')) cpSync(join(RAIZ, f), join(DIST, f), { recursive: true });
+// Mismo formato que usa el navegador: window.PRODUCTOS = [...]
+writeFileSync(join(DIST, 'productos.js'), `// Generado por tools/build.mjs desde Supabase. No editar: usa el panel /admin.\nwindow.PRODUCTOS = ${JSON.stringify(P, null, 1)};\n`);
 
 // ---------- Imagen de vista previa 1200×630 (JPG: WhatsApp no muestra AVIF) ----------
 async function imagenOG(p){
-  const foto = await sharp(join(RAIZ, fotos(p)[0])).resize(820, 618, { fit: 'cover' }).jpeg().toBuffer();
+  const u = fotos(p)[0]; if (!u) return;
+  let foto;
+  try { foto = await sharp(await leerFoto(u)).rotate().resize(820, 618, { fit: 'cover' }).jpeg().toBuffer(); }
+  catch (e) { console.warn(`⚠ No se pudo procesar la foto de "${p.id}": ${e.message}`); return; }
   const franja = Buffer.from(`<svg width="1200" height="630"><rect width="1200" height="630" fill="#101D32"/>
     <g transform="skewX(-25)">${[0, 1, 2, 3, 4].map(i => `<rect x="${980 + i * 34}" y="0" width="16" height="630" fill="#D62938" opacity=".85"/>`).join('')}</g>
     <rect y="618" width="1200" height="12" fill="#D62938"/></svg>`);
   await sharp(franja).composite([{ input: foto, left: 0, top: 0 }])
     .jpeg({ quality: 82, mozjpeg: true }).toFile(join(DIST, 'og', p.id + '.jpg'));
 }
+
+// Vista previa genérica del sitio (para productos sin foto y páginas generales).
+await sharp(Buffer.from(`<svg width="1200" height="630"><rect width="1200" height="630" fill="#101D32"/>
+  <g transform="skewX(-25)">${[0, 1, 2, 3, 4].map(i => `<rect x="${980 + i * 34}" y="0" width="16" height="630" fill="#D62938" opacity=".85"/>`).join('')}</g>
+  <rect y="618" width="1200" height="12" fill="#D62938"/></svg>`)).jpeg({ quality: 82 }).toFile(join(DIST, 'og', 'sitio.jpg'));
 
 // ---------- Página del producto ----------
 const nav = `<header class="top"><div class="wrap">
@@ -48,9 +71,9 @@ const nav = `<header class="top"><div class="wrap">
 function pagina(p){
   const f = fotos(p), url = `${SITIO}/producto/${p.id}`;
   const titulo = `${p.nombre}${p.referencia ? ' · Ref. ' + p.referencia : ''} · ${C.nombre}`;
-  const desc = corto(`${p.nombre}${p.marca ? ' ' + p.marca : ''}${p.referencia ? ', referencia ' + p.referencia : ''}. ${p.descripcion} Cotiza por WhatsApp.`, 300);
-  const ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.nombre, description: p.descripcion,
-    image: f.map(u => SITIO + u), sku: p.referencia || p.id, category: p.categoria, url,
+  const desc = corto(`${p.nombre}${p.marca ? ' ' + p.marca : ''}${p.referencia ? ', referencia ' + p.referencia : ''}. ${p.descripcion || ''} Cotiza por WhatsApp.`, 300);
+  const ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.nombre, description: p.descripcion || p.nombre,
+    image: f.map(u => /^https?:/.test(u) ? u : SITIO + u), sku: p.referencia || p.id, category: p.categoria, url,
     ...(p.marca ? { brand: { '@type': 'Brand', name: p.marca } } : {}) };
   return `<!DOCTYPE html>
 <html lang="es">
@@ -64,9 +87,9 @@ function pagina(p){
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="${esc(C.nombre)}">
 <meta property="og:title" content="${esc(p.nombre + (p.referencia ? ' · Ref. ' + p.referencia : ''))}">
-<meta property="og:description" content="${esc(corto(p.descripcion, 200))}">
+<meta property="og:description" content="${esc(corto(p.descripcion || 'Repuesto para buses y camiones Scania. Cotiza por WhatsApp.', 200))}">
 <meta property="og:url" content="${esc(url)}">
-<meta property="og:image" content="${esc(SITIO + '/og/' + p.id + '.jpg')}">
+<meta property="og:image" content="${esc(SITIO + (existsSync(join(DIST, 'og', p.id + '.jpg')) ? '/og/' + p.id + '.jpg' : '/og/sitio.jpg'))}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="/styles.css">
@@ -103,18 +126,18 @@ ${nav}
   <div class="crumbs"><a href="/">Inicio</a> › <a href="/catalogo">Catálogo</a> › <a href="/catalogo?cat=${encodeURIComponent(p.categoria)}">${esc(p.categoria)}</a> › ${esc(p.nombre)}</div>
   <div class="pp">
     <div class="gal">
-      <div class="main-w"><img class="main zoomable" src="${esc(f[0])}" alt="${esc(p.nombre)}" data-i="0">
+      <div class="main-w"><img class="main zoomable" src="${esc(f[0] || SIN_FOTO)}" alt="${esc(p.nombre)}" data-i="0">
         <span class="zoom-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/></svg>Toca para ampliar</span></div>
       ${f.length > 1 ? `<div class="thumbs">${f.map((u, i) => `<button type="button" class="${i ? '' : 'on'}" data-i="${i}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}
     </div>
     <div class="info-p">
       <span class="tag">${esc(p.categoria)}</span>
       <h1>${esc(p.nombre)}</h1>
-      <p class="desc">${esc(p.descripcion)}</p>
+      <p class="desc">${esc(p.descripcion || 'Escríbenos para confirmar especificaciones, referencia y compatibilidad con tu vehículo.')}</p>
       <dl class="spec">
         ${p.marca ? `<dt>Marca</dt><dd>${esc(p.marca)}</dd>` : ''}
         ${p.referencia ? `<dt>Referencia</dt><dd>${esc(p.referencia)}</dd>` : ''}
-        <dt>Compatible</dt><dd>${esc(p.compatible)}</dd>
+        <dt>Compatible</dt><dd>${esc(p.compatible || 'Consúltanos según tu vehículo')}</dd>
         ${p.estado ? `<dt>Estado</dt><dd>${esc(p.estado)}</dd>` : ''}
       </dl>
       <div class="acts">
@@ -152,10 +175,9 @@ ${nav}
 `;
 }
 
-for (const p of P) {
-  writeFileSync(join(DIST, 'producto', p.id + '.html'), pagina(p));
-  await imagenOG(p);
-}
+// Imágenes de vista previa en paralelo (de a 8) y luego las páginas.
+for (let i = 0; i < P.length; i += 8) await Promise.all(P.slice(i, i + 8).map(imagenOG));
+for (const p of P) writeFileSync(join(DIST, 'producto', p.id + '.html'), pagina(p));
 
 // ---------- sitemap.xml y robots.txt ----------
 const hoy = new Date().toISOString().slice(0, 10);
