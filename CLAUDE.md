@@ -27,7 +27,9 @@ El dueño sube foto + nombre (+ referencia si la sabe). Tú completas por lotes,
    where estado_ficha = 'pendiente' order by creado_en limit 20;` (MCP de Supabase, proyecto `xrfxqcmosfqayqcxlapc`).
 2. Por cada uno, investiga con búsqueda web usando el texto (nombre, marca, referencia, `respuesta` del dueño).
    **No abras las fotos** salvo que el texto no alcance (p. ej. para leer una referencia en la etiqueta).
-3. Si confirmas los datos: `update productos set referencia=…, ref_por_confirmar=false, marca=…, compatible=…,
+   Si `categoria = 'Por clasificar'`, asígnale una de las existentes (`select distinct categoria from productos`);
+   crea una nueva solo si ninguna encaja.
+3. Si confirmas los datos: `update productos set categoria=…, referencia=…, ref_por_confirmar=false, marca=…, compatible=…,
    descripcion=…, estado_ficha='completa', pregunta=null where id=…`. Descripción: 1 a 3 frases, español de Colombia,
    qué es, para qué sirve y cuándo se cambia (mira el tono de las fichas completas). Nunca inventes referencias.
 4. Si es imposible confirmarlo solo: `estado_ficha='revisar'` y en `pregunta` una duda concreta y respondible

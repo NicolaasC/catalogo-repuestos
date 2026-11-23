@@ -161,7 +161,7 @@
           <option value="revisar">Revisar juntos</option>
           <option value="completa">Completa</option>
         </select></label>
-      <p class="ayuda">En automático queda «Pendiente» si falta la descripción o la referencia, o si respondiste una pregunta de Claude.</p>
+      <p class="ayuda">En automático queda «Pendiente» si falta la descripción, la referencia o la categoría, o si respondiste una pregunta de Claude.</p>
       <div class="checks"><label style="margin:0"><input type="checkbox" name="publicado" checked>Visible en el catálogo</label>
         <label style="margin:0"><input type="checkbox" name="destacado">Destacado en la portada</label></div>
       <p class="err" id="ed-err"></p>
@@ -272,6 +272,7 @@
 
   // ================= Productos =================
   const CATS_BASE = ['Motor', 'Filtros', 'Frenos y aire', 'Suspensión', 'Refrigeración', 'Embrague', 'Caja y retarder', 'Diferencial', 'Dirección', 'Ejes y bocines', 'Eléctrico', 'Carrocería'];
+  const POR_CLASIFICAR = 'Por clasificar';
   const ETIQ = { pendiente: 'Pendiente', revisar: 'Revisar juntos', completa: 'Completa' };
   let prods = [], pfiltro = 'todos', limite = 40, ultimaPub = null, borrados = 0;
 
@@ -314,7 +315,7 @@
     $('plista').innerHTML = lista.length ? lista.slice(0, limite).map(p => `
       <button type="button" class="pr${p.publicado ? '' : ' oculto'}" data-id="${esc(p.id)}">
         <img src="${esc(ruta(p.imagenes?.[0]) || '/img/sin-foto.svg')}" alt="" loading="lazy">
-        <span><b>${esc(p.nombre)}${p.destacado ? ' ★' : ''}</b><small>${esc([p.categoria, p.marca, p.referencia ? 'Ref. ' + p.referencia : (p.ref_por_confirmar ? 'Ref. por investigar' : '')].filter(Boolean).join(' · '))}${p.publicado ? '' : ' · OCULTO'}</small></span>
+        <span><b>${esc(p.nombre)}${p.destacado ? ' ★' : ''}</b><small>${esc([p.categoria === POR_CLASIFICAR ? 'Categoría por asignar' : p.categoria, p.marca, p.referencia ? 'Ref. ' + p.referencia : (p.ref_por_confirmar ? 'Ref. por investigar' : '')].filter(Boolean).join(' · '))}${p.publicado ? '' : ' · OCULTO'}</small></span>
         <span class="est ${p.estado_ficha}">${ETIQ[p.estado_ficha]}</span>
       </button>`).join('') : '<p class="vacio">No hay productos en este filtro.</p>';
     $('pmas').hidden = lista.length <= limite;
@@ -330,15 +331,18 @@
   let actual = null, fotosEd = [], subiendo = 0;
 
   function opcionesCategoria(sel){
-    const cats = [...new Set([...CATS_BASE, ...prods.map(p => p.categoria)])].sort((a, b) => a.localeCompare(b, 'es'));
-    F.categoria.innerHTML = '<option value="">Elige…</option>' + cats.map(c => `<option${c === sel ? ' selected' : ''}>${esc(c)}</option>`).join('') + '<option value="__otra">Otra categoría…</option>';
+    const cats = [...new Set([...CATS_BASE, ...prods.map(p => p.categoria)])].filter(c => c !== POR_CLASIFICAR).sort((a, b) => a.localeCompare(b, 'es'));
+    const cats0 = cats.filter(c => c !== POR_CLASIFICAR);
+    F.categoria.innerHTML = `<option value="__claude"${sel === POR_CLASIFICAR ? ' selected' : ''}>No sé: Claude la asigna</option>` + cats0.map(c => `<option${c === sel ? ' selected' : ''}>${esc(c)}</option>`).join('') + '<option value="__otra">Otra categoría…</option>';
   }
   F.categoria.onchange = () => { $('cat-otra').hidden = F.categoria.value !== '__otra'; };
 
   function abrirEditor(p){
     actual = p; F.reset(); $('ed-err').textContent = '';
     $('ed-t').textContent = p ? 'Editar producto' : 'Nuevo producto';
-    opcionesCategoria(p?.categoria); $('cat-otra').hidden = true;
+    opcionesCategoria(p ? p.categoria : null); if (!p) F.categoria.value = '';
+    if (!p) F.categoria.insertAdjacentHTML('afterbegin', '<option value="" selected disabled>Elige…</option>');
+    $('cat-otra').hidden = true;
     for (const k of ['nombre', 'marca', 'referencia', 'compatible', 'descripcion', 'respuesta']) F[k].value = p?.[k] || '';
     F.ref_por_confirmar.checked = !!p?.ref_por_confirmar;
     F.publicado.checked = p ? p.publicado : true; F.destacado.checked = !!p?.destacado;
@@ -394,8 +398,9 @@
   F.onsubmit = async e => {
     e.preventDefault(); $('ed-err').textContent = '';
     if (subiendo) { $('ed-err').textContent = 'Espera a que terminen de subir las fotos.'; return; }
-    const categoria = F.categoria.value === '__otra' ? F.categoria_otra.value.trim() : F.categoria.value;
-    if (F.nombre.value.trim().length < 2 || !categoria) { $('ed-err').textContent = 'El nombre y la categoría son obligatorios.'; return; }
+    const categoria = F.categoria.value === '__otra' ? F.categoria_otra.value.trim() : F.categoria.value === '__claude' ? POR_CLASIFICAR : F.categoria.value;
+    if (F.nombre.value.trim().length < 2) { $('ed-err').textContent = 'Escribe el nombre del repuesto.'; return; }
+    if (!categoria) { $('ed-err').textContent = 'Elige una categoría o «No sé: Claude la asigna».'; return; }
     const v = k => F[k].value.trim() || null;
     const datos = { nombre: v('nombre'), categoria, marca: v('marca'), referencia: v('referencia'), compatible: v('compatible'),
       descripcion: v('descripcion'), respuesta: v('respuesta'), ref_por_confirmar: F.ref_por_confirmar.checked && !v('referencia'),
@@ -405,7 +410,7 @@
       // 1) Respondiste una pregunta de Claude → vuelve a Claude.  2) Falta descripción o referencia → Claude la completa.
       // 3) Sigue la duda sin responder → revisar.  4) Si no, completa.
       const respondio = actual?.estado_ficha === 'revisar' && datos.respuesta && datos.respuesta !== actual.respuesta;
-      est = respondio || !datos.descripcion || datos.ref_por_confirmar ? 'pendiente'
+      est = respondio || !datos.descripcion || datos.ref_por_confirmar || categoria === POR_CLASIFICAR ? 'pendiente'
           : actual?.estado_ficha === 'revisar' ? 'revisar' : 'completa';
     }
     datos.estado_ficha = est;

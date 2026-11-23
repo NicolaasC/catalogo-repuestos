@@ -24,6 +24,8 @@ const r = await fetch(`${C.supabase.url}/rest/v1/productos?select=${CAMPOS}&publ
   { headers: { apikey: C.supabase.key } });
 if (!r.ok) throw new Error(`No se pudieron leer los productos de Supabase (${r.status}): ${await r.text()}`);
 const P = (await r.json()).map(p => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== null && v !== '' && !(Array.isArray(v) && !v.length))));
+// Mientras Claude asigna la categoría, el producto se muestra en "Otros repuestos".
+for (const p of P) if (p.categoria === 'Por clasificar') p.categoria = 'Otros repuestos';
 if (!P.length) throw new Error('Supabase devolvió 0 productos publicados; no se publica un catálogo vacío.');
 for (const p of P) if (!p.imagenes?.length) console.warn(`⚠ "${p.id}" no tiene fotos.`);
 
