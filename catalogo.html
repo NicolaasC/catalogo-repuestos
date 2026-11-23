@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo · Conexión Scania</title>
+<meta name="description" content="Catálogo de repuestos para buses y camiones Scania. Busca por nombre, marca o referencia y cotiza por WhatsApp.">
+<meta name="theme-color" content="#101D32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="cotizacion.css">
+<style>
+  .phead{position:relative;overflow:hidden;padding:48px 0 28px;background:radial-gradient(900px 380px at 85% 0%,#22406a 0%,transparent 60%),linear-gradient(180deg,#0d1829,var(--navy))}
+  .phead .stripes{width:220px;height:90px;right:-30px;top:36px;opacity:.35}
+  .phead .wrap{position:relative;z-index:1}
+  .crumbs{font-size:13px;color:var(--gray);margin-bottom:6px}
+  .crumbs a:hover{color:#fff}
+  .phead h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:clamp(44px,7vw,78px);line-height:.9}
+  .phead h1 em{color:var(--red);font-style:italic}
+
+  .tools{position:sticky;top:72px;z-index:20;background:rgba(16,29,50,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 0}
+  .tools .row{display:flex;gap:12px;flex-wrap:wrap}
+  .search{flex:1 1 280px;position:relative}
+  .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--gray)}
+  .search input,.sel{width:100%;background:var(--navy2);border:1px solid var(--line);color:var(--white);padding:13px 14px 13px 44px;border-radius:10px;font:inherit;font-size:16px}
+  .sel{width:auto;padding:13px 14px;flex:0 0 auto;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gray) 50%),linear-gradient(135deg,var(--gray) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+  .search input:focus,.sel:focus{outline:2px solid var(--red);border-color:transparent}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--navy2);border:1px solid var(--line);color:#c3c9d2;padding:9px 15px;border-radius:999px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+  .chip svg{width:17px;height:17px}
+  .chip:hover{color:#fff;border-color:rgba(244,245,247,.3)}
+  .chip.on{background:var(--red);border-color:var(--red);color:#fff}
+
+  main{padding:28px 0 80px}
+  .count{color:var(--gray);font-size:14px;margin-bottom:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .count button{background:none;border:0;color:var(--red2);font:inherit;cursor:pointer}
+  .empty{color:var(--gray);padding:60px 0;text-align:center}
+  .empty b{display:block;font-family:var(--display);font-size:28px;text-transform:uppercase;color:var(--white);margin-bottom:8px}
+  .empty .btn{margin-top:18px}
+
+  /* ---------- Ficha ---------- */
+  dialog{border:none;border-radius:18px;background:var(--navy2);color:var(--white);max-width:980px;width:calc(100% - 24px);max-height:calc(100dvh - 24px);padding:0;overflow:auto;margin:auto}
+  dialog::backdrop{background:rgba(5,10,18,.8);backdrop-filter:blur(3px)}
+  .dlg{display:grid;grid-template-columns:1fr 1.05fr}
+  .dlg .img{background:#0c1626}
+  .dlg .img{display:flex;flex-direction:column}
+  .dlg .img .main{width:100%;object-fit:cover;display:block;aspect-ratio:3/4;flex:1}
+  .thumbs{display:flex;gap:8px;padding:10px;background:#0a1220}
+  .thumbs button{flex:0 0 64px;height:64px;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:none;cursor:pointer;opacity:.6}
+  .thumbs button.on{border-color:var(--red);opacity:1}
+  .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+  .dlg .body{padding:34px 32px 30px;display:flex;flex-direction:column;gap:14px;border-top:4px solid var(--red)}
+  .dlg h2{font-family:var(--display);font-size:clamp(32px,4vw,44px);font-weight:800;text-transform:uppercase;line-height:.95}
+  .dlg p{color:#d3d8df;font-size:15px}
+  .spec{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .spec dt{color:var(--gray)}
+  .spec dd{font-weight:500}
+  .dlg .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  .dlg .acts .btn{flex:1 1 200px;justify-content:center}
+  .rel h4{font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:15px;color:var(--gray);margin:8px 0 10px}
+  .rel .r{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .rel a{display:block;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0c1626;position:relative}
+  .rel a:hover{border-color:var(--red)}
+  .rel img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+  .rel span{position:absolute;inset:auto 0 0 0;font-size:11px;font-weight:600;padding:18px 7px 6px;background:linear-gradient(transparent,rgba(0,0,0,.85));line-height:1.2}
+  .close{position:sticky;top:12px;float:right;margin:12px 12px -52px 0;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer}
+  @media (max-width:560px){.tools{padding:10px 0}.tools .row{flex-wrap:nowrap;gap:8px}.search{flex:1 1 auto;min-width:0}
+    .search input{padding:11px 10px 11px 38px}.search svg{left:12px;width:18px}.sel{max-width:40%;padding:11px 30px 11px 10px;font-size:14px;text-overflow:ellipsis}
+    .chips{padding-top:8px}.chip{padding:7px 12px;font-size:13px}.phead{padding:28px 0 18px}main{padding:18px 0 80px}}
+  @media (max-width:760px){.dlg{grid-template-columns:1fr}.dlg .img .main{aspect-ratio:4/4}.dlg .body{padding:24px 20px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+    <button class="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="on">Catálogo</a>
+      <a href="index.html#categorias">Categorías</a>
+      <a href="#" data-cot-open>Mi cotización <b data-cot-count>0</b></a>
+      <a class="btn btn-red" data-wa data-ico="_wa">Cotizar por WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<div class="phead">
+  <div class="stripes"></div>
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">Inicio</a> › Catálogo</div>
+    <h1>Catálogo de <em>repuestos</em></h1>
+  </div>
+</div>
+
+<div class="tools">
+  <div class="wrap">
+    <div class="row">
+      <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="q" type="search" placeholder="Buscar repuesto, marca o referencia…" autocomplete="off" aria-label="Buscar"></label>
+      <select class="sel" id="marca" aria-label="Filtrar por marca"></select>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="count"><span id="count"></span><button id="clear" hidden>Limpiar filtros</button></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<dialog id="dlg">
+  <button class="close" onclick="dlg.close()" aria-label="Cerrar">×</button>
+  <div id="dlgc"></div>
+</dialog>
+
+<footer>
+  <div class="wrap">
+    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. Scania y las demás marcas mencionadas pertenecen a sus respectivos dueños y se usan solo para indicar compatibilidad. · <a href="privacidad.html">Privacidad, cookies y términos</a></div>
+  </div>
+</footer>
+
+<a class="wa-float" data-wa data-ico="_wa" aria-label="WhatsApp"></a>
+
+<script src="config.js"></script>
+<script src="productos.js"></script>
+<script src="app.js"></script>
+<script>
+  const P = window.PRODUCTOS || [], {esc, icono, card, wa, msgProducto, ICONOS, fotos} = APP;
+  const $ = id => document.getElementById(id);
+  const grid = $('grid'), q = $('q'), chips = $('chips'), count = $('count'), marcaSel = $('marca'), clear = $('clear');
+  const dlg = $('dlg'), dlgc = $('dlgc');
+  const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+  const params = new URLSearchParams(location.search);
+  const cats = ['Todos', ...new Set(P.map(p => p.categoria).filter(Boolean))];
+  let cat = cats.includes(params.get('cat')) ? params.get('cat') : 'Todos';
+  q.value = params.get('q') || '';
+
+  // Marcas: se separan las que vienen combinadas ("JTEKT (Koyo), Fersa y NTN")
+  const marcasDe = p => String(p.marca || '').split(/,| y /).map(s => s.trim()).filter(Boolean);
+  const marcas = [...new Set(P.flatMap(marcasDe))].sort((a, b) => a.localeCompare(b, 'es'));
+  marcaSel.innerHTML = '<option value="">Todas las marcas</option>' + marcas.map(m => `<option>${esc(m)}</option>`).join('');
+
+  chips.innerHTML = cats.map(c => `<button class="chip${c===cat?' on':''}" data-c="${esc(c)}">${c==='Todos'?'':icono(c)}${esc(c)}</button>`).join('');
+  chips.onclick = e => { const b = e.target.closest('.chip'); if (!b) return; cat = b.dataset.c; render(); };
+  q.oninput = render; marcaSel.onchange = render;
+  clear.onclick = () => { q.value = ''; marcaSel.value = ''; cat = 'Todos'; render(); };
+
+  function render(){
+    chips.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x.dataset.c === cat));
+    const t = norm(q.value.trim()), m = marcaSel.value;
+    const terms = t.split(/\s+/).filter(Boolean);
+    const list = P.filter(p => (cat === 'Todos' || p.categoria === cat) && (!m || marcasDe(p).includes(m)) &&
+      terms.every(w => norm([p.nombre, p.marca, p.categoria, p.referencia, p.compatible, p.descripcion].join(' ')).replace(/[.\s-]/g, '').includes(w.replace(/[.\-]/g, '')) ||
+                       norm([p.nombre, p.marca, p.categoria, p.referencia, p.compatible, p.descripcion].join(' ')).includes(w)));
+    count.textContent = list.length + (list.length === 1 ? ' repuesto' : ' repuestos') + (cat !== 'Todos' ? ' en ' + cat : '');
+    clear.hidden = !(t || m || cat !== 'Todos');
+    grid.innerHTML = list.length ? list.map(card).join('') :
+      `<div class="empty" style="grid-column:1/-1"><b>No lo encontramos en el catálogo</b>Puede que lo tengamos o lo consigamos. Pregúntanos por WhatsApp.<br>
+       <a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(wa('Hola, estoy buscando este repuesto: ' + q.value + '. ¿Lo tienen disponible?'))}">${ICONOS._wa}Preguntar por WhatsApp</a></div>`;
+    const u = new URL(location); u.search = '';
+    if (cat !== 'Todos') u.searchParams.set('cat', cat);
+    if (q.value.trim()) u.searchParams.set('q', q.value.trim());
+    history.replaceState(null, '', u);
+  }
+
+  function abrir(id){
+    const p = P.find(x => x.id === id); if (!p) return;
+    const rel = P.filter(x => x.categoria === p.categoria && x.id !== p.id).slice(0, 3), f = fotos(p);
+    dlgc.innerHTML = `<div class="dlg">
+      <div class="img"><img class="main" src="${esc(f[0])}" alt="${esc(p.nombre)}">${f.length > 1 ? `<div class="thumbs">${f.map((u, i) =>
+        `<button type="button" class="${i ? '' : 'on'}" data-foto="${esc(u)}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}</div>
+      <div class="body">
+        <span class="tag">${esc(p.categoria)}</span>
+        <h2>${esc(p.nombre)}</h2>
+        <p>${esc(p.descripcion)}</p>
+        <dl class="spec">
+          ${p.marca ? `<dt>Marca</dt><dd>${esc(p.marca)}</dd>` : ''}
+          ${p.referencia ? `<dt>Referencia</dt><dd>${esc(p.referencia)}</dd>` : ''}
+          <dt>Compatible</dt><dd>${esc(p.compatible)}</dd>
+          ${p.estado ? `<dt>Estado</dt><dd>${esc(p.estado)}</dd>` : ''}
+        </dl>
+        <div class="acts">
+          <button type="button" class="btn btn-red" data-cot-add="${esc(p.id)}">Agregar a mi cotización</button>
+          <a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(wa(msgProducto(p)))}">${ICONOS._wa}Preguntar por WhatsApp</a>
+        </div>
+        ${rel.length ? `<div class="rel"><h4>Otros repuestos de ${esc(p.categoria)}</h4><div class="r">${rel.map(r =>
+          `<a href="#${esc(r.id)}"><img src="${esc(fotos(r)[0])}" alt="" loading="lazy"><span>${esc(r.nombre)}</span></a>`).join('')}</div></div>` : ''}
+      </div></div>`;
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+  }
+
+  grid.onclick = e => { if (e.target.closest('[data-cot-add]')) return; const c = e.target.closest('.card'); if (!c) return; e.preventDefault(); location.hash = c.dataset.id; };
+  dlgc.onclick = e => { const t = e.target.closest('[data-foto]'); if (!t) return;
+    dlgc.querySelector('.main').src = t.dataset.foto; dlgc.querySelectorAll('.thumbs button').forEach(b => b.classList.toggle('on', b === t)); };
+  addEventListener('hashchange', () => location.hash.length > 1 ? abrir(decodeURIComponent(location.hash.slice(1))) : dlg.close());
+  dlg.addEventListener('close', () => { if (location.hash) history.replaceState(null, '', location.pathname + location.search); });
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+  render();
+  if (location.hash.length > 1) abrir(decodeURIComponent(location.hash.slice(1)));
+</script>
+<script src="cotizacion.js"></script>
+</body>
+</html>

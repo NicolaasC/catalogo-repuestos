@@ -1,0 +1,48 @@
+/* Lista de cotización (cotizacion.js) */
+.cot-fab{position:fixed;left:16px;bottom:20px;z-index:60;display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;border:0;border-radius:999px;padding:13px 18px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.cot-fab[hidden]{display:none}
+.cot-fab.pulso{animation:cotPulso .5s ease}
+@keyframes cotPulso{40%{transform:scale(1.12)}}
+.cot-fab svg{width:20px;height:20px}
+.cot-fab b,.nav [data-cot-count]{background:#fff;color:var(--red);border-radius:999px;min-width:22px;padding:1px 7px;font-size:13px;text-align:center}
+.cot-back{position:fixed;inset:0;z-index:80;background:rgba(5,10,18,.7);backdrop-filter:blur(2px)}
+.cot{position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(460px,100%);background:var(--navy2);color:var(--white);display:flex;flex-direction:column;border-left:4px solid var(--red);box-shadow:-20px 0 50px rgba(0,0,0,.4)}
+.cot[hidden],.cot-back[hidden],.cot-aviso[hidden],.cot-form[hidden],.cot-empty[hidden]{display:none}
+.cot>header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.cot h2{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:30px;line-height:1}
+.cot-x{background:rgba(0,0,0,.35);color:#fff;border:0;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer}
+.cot-body{overflow:auto;padding:16px 20px 28px;flex:1}
+.cot-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.cot-list li{display:grid;grid-template-columns:52px 1fr auto auto;gap:10px;align-items:center;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:8px}
+.cot-list img{width:52px;height:52px;object-fit:cover;border-radius:8px;background:#0c1626}
+.cot-list b{display:block;font-size:14px;line-height:1.25}
+.cot-list small{color:var(--gray);font-size:12px}
+.cot-qty{display:flex;align-items:center;gap:6px}
+.cot-qty button,.cot-rm{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--navy);color:#fff;font:inherit;font-size:17px;cursor:pointer}
+.cot-qty span{min-width:22px;text-align:center;font-weight:600}
+.cot-rm{border:0;background:none;color:var(--gray);font-size:22px}
+.cot-empty{color:var(--gray);font-size:15px;padding:30px 0}
+.cot-form{display:flex;flex-direction:column;gap:12px;margin-top:22px}
+.cot-form h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.cot-form label{display:block;font-size:13px;font-weight:500;color:#d3d8df}
+.cot-form label span{color:var(--gray);font-weight:400}
+.cot,.cot *,.cot-aviso{box-sizing:border-box}
+.cot-form input,.cot-form textarea{display:block;margin-top:5px;background:var(--navy);border:1px solid var(--line);color:var(--white);padding:11px 12px;border-radius:10px;font:inherit;font-size:16px;width:100%}
+.cot-form input:focus,.cot-form textarea:focus{outline:2px solid var(--red);border-color:transparent}
+.cot-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cot-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.cot-form .cot-ok{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-weight:400;font-size:12.5px;line-height:1.45;color:#c3c9d2}
+.cot-form .cot-ok input{width:20px;height:20px;flex:none;margin:1px 0 0;accent-color:var(--red)}
+.cot-ok a{color:#fff;text-decoration:underline}
+.cot-err{color:#ff8a8a;font-size:13px;min-height:0;margin:0}
+.cot-err:empty{display:none}
+.cot-send{justify-content:center;width:100%}
+.cot-send:disabled{opacity:.6}
+.cot-note{color:var(--gray);font-size:12px;margin:0}
+[data-cot-add].on{background:transparent;border:1px solid var(--red);color:#fff}
+.cot-aviso{position:fixed;left:16px;right:16px;bottom:16px;z-index:70;max-width:640px;margin:0 auto;background:#0c1626;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:13px;color:#c3c9d2}
+.cot-aviso p{margin:0;flex:1}
+.cot-aviso a{color:#fff;text-decoration:underline}
+.cot-aviso .btn{flex:none;padding:10px 16px}
+.legal a{text-decoration:underline}
+@media (max-width:520px){.cot-2{grid-template-columns:1fr}.cot-aviso{flex-direction:column;align-items:stretch}}

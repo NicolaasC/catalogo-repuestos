@@ -1,0 +1,5 @@
+node_modules/
+dist/
+fotos/
+.DS_Store
+.vercel

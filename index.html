@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conexión Scania · Repuestos para buses y camiones</title>
+<meta name="description" content="Conexión Scania: repuestos para buses y camiones. Motor, frenos, suspensión, caja, diferencial y más. Cotiza por WhatsApp.">
+<meta name="theme-color" content="#101D32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:72px 0 96px;
+    background:radial-gradient(1100px 520px at 78% 30%,#22406a 0%,transparent 60%),linear-gradient(180deg,#0d1829,#101D32 70%)}
+  .hero .stripes.s1{width:280px;height:120px;right:-40px;bottom:40px}
+  .hero .stripes.s2{width:180px;height:80px;left:-30px;top:30px;opacity:.5}
+  .hero .wrap{position:relative;display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+  .hero h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:clamp(54px,8.4vw,104px);line-height:.88;margin:14px 0 22px;letter-spacing:-.005em}
+  .hero h1 em{color:var(--red);font-style:italic;display:block}
+  .hero h1 em::after{content:"";display:block;width:62%;height:5px;margin-top:10px;background:linear-gradient(90deg,var(--red),transparent);border-radius:4px;transform:skewX(-20deg)}
+  .hero .lead{margin-bottom:30px}
+  .hero .ctas{display:flex;gap:14px;flex-wrap:wrap}
+  .stats{display:flex;gap:36px;margin-top:42px;flex-wrap:wrap}
+  .stats b{display:block;font-family:var(--display);font-weight:800;font-size:38px;line-height:1}
+  .stats span{color:var(--gray);font-size:13px}
+  .collage{position:relative;height:540px}
+  .collage .ph{position:absolute;width:56%;aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 60px -25px rgba(0,0,0,.85)}
+  .collage .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .collage .p1{left:0;top:40px;transform:rotate(-6deg);z-index:1}
+  .collage .p2{right:0;top:0;transform:rotate(5deg);z-index:2}
+  .collage .p3{left:22%;bottom:-10px;width:52%;z-index:3;transform:rotate(-1deg)}
+  .collage .badge{position:absolute;z-index:4;right:2%;bottom:56px;background:var(--red);color:#fff;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:20px;line-height:1;padding:14px 18px;border-radius:10px;transform:rotate(-3deg);box-shadow:0 14px 30px -12px rgba(214,41,56,.9)}
+  .collage .badge small{display:block;font-size:12px;letter-spacing:.14em;font-weight:700;opacity:.9;margin-bottom:4px}
+  @media (max-width:900px){
+    .hero .wrap{grid-template-columns:1fr}
+    .collage{height:420px;max-width:460px;margin:10px auto 0;width:100%}
+  }
+
+  /* ---------- Valores ---------- */
+  .values{background:var(--navy2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:0}
+  .values .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+  .val{padding:28px 22px;display:flex;gap:14px;align-items:flex-start;border-left:1px solid var(--line)}
+  .val:first-child{border-left:0}
+  .val svg{width:30px;height:30px;color:var(--red2);flex:none}
+  .val b{display:block;font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:20px;letter-spacing:.03em}
+  .val span{color:var(--gray);font-size:13px}
+  @media (max-width:860px){.values .wrap{grid-template-columns:1fr 1fr}.val:nth-child(3){border-left:0}.val{border-top:1px solid var(--line)}}
+  @media (max-width:480px){.values .wrap{grid-template-columns:1fr}.val{border-left:0}}
+
+  /* ---------- Categorías ---------- */
+  .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:36px}
+  .cat{position:relative;background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:22px 20px 20px;display:flex;flex-direction:column;gap:14px;transition:border-color .15s,transform .15s,background .15s;overflow:hidden}
+  .cat svg{width:38px;height:38px;color:var(--red2)}
+  .cat b{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:20px;line-height:1;overflow-wrap:anywhere}
+  .cat small{color:var(--gray);font-size:12px}
+  .cat::after{content:"→";position:absolute;right:18px;top:18px;color:var(--gray);transition:transform .15s,color .15s}
+  .cat:hover{border-color:var(--red);transform:translateY(-3px);background:var(--navy3)}
+  .cat:hover::after{color:#fff;transform:translateX(3px)}
+
+  /* ---------- Destacados ---------- */
+  .feat{background:linear-gradient(180deg,#0d1829,var(--navy))}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:32px}
+
+  /* ---------- Cómo cotizar ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px;counter-reset:s}
+  .step{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:28px 24px;position:relative;counter-increment:s}
+  .step::before{content:"0" counter(s);font-family:var(--display);font-weight:800;font-style:italic;font-size:56px;line-height:1;color:var(--red);display:block;margin-bottom:10px}
+  .step b{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:22px;display:block;margin-bottom:6px}
+  .step p{color:#c3c9d2;font-size:15px}
+  @media (max-width:760px){.steps{grid-template-columns:1fr}}
+
+  /* ---------- Banda CTA ---------- */
+  .band{position:relative;overflow:hidden;background:var(--red);padding:64px 0}
+  .band::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(0,0,0,.10) 0 22px,transparent 22px 44px);
+    -webkit-mask:linear-gradient(90deg,transparent 40%,#000);mask:linear-gradient(90deg,transparent 40%,#000)}
+  .band .wrap{position:relative;display:flex;justify-content:space-between;align-items:center;gap:28px;flex-wrap:wrap}
+  .band h2{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:clamp(34px,5vw,56px);line-height:.92}
+  .band p{color:#ffe3e5;margin-top:8px;max-width:520px}
+  .band .btn{background:#fff;color:var(--navy);font-size:18px;padding:16px 26px}
+  .band .btn:hover{background:var(--navy);color:#fff}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+    <button class="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
+    <nav class="nav">
+      <a href="index.html" class="on">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="#categorias">Categorías</a>
+      <a href="#cotizar">Cómo cotizar</a>
+      <a href="#contacto">Contacto</a>
+      <a class="btn btn-red" data-wa data-ico="_wa">Cotizar por WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="stripes s1"></div><div class="stripes s2"></div>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Repuestos para buses y camiones</div>
+      <h1>Tu equipo en <em>movimiento.</em></h1>
+      <p class="lead">Encuentra los repuestos que necesitas para mantener tu vehículo en marcha: motor, frenos y aire, suspensión, caja, diferencial y más, para buses y camiones Scania.</p>
+      <div class="ctas">
+        <a class="btn btn-red" href="catalogo.html">Explorar catálogo <span aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" data-wa data-ico="_wa">Escríbenos</a>
+      </div>
+      <div class="stats">
+        <div><b id="nProd">—</b><span>repuestos en catálogo</span></div>
+        <div><b id="nCat">—</b><span>categorías</span></div>
+        <div><b>24/7</b><span>catálogo en línea</span></div>
+      </div>
+    </div>
+    <div class="collage" id="collage"></div>
+  </div>
+</section>
+
+<section class="values">
+  <div class="wrap">
+    <div class="val"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><div><b>Confianza</b><span>Referencias verificadas y fotos reales de cada pieza.</span></div></div>
+    <div class="val"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"/></svg><div><b>Calidad</b><span>Marcas reconocidas como WABCO, MANN-FILTER, Elring y FAG.</span></div></div>
+    <div class="val"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><div><b>Disponibilidad</b><span>Consulta existencias y precio directo por WhatsApp.</span></div></div>
+    <div class="val"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4.5"/></svg><div><b>Asesoría</b><span>Te ayudamos a encontrar la referencia correcta.</span></div></div>
+  </div>
+</section>
+
+<section id="categorias">
+  <div class="wrap">
+    <div class="eyebrow">Categorías</div>
+    <h2 class="h-sec">Busca por sistema</h2>
+    <p class="lead">Elige el sistema de tu vehículo y ve directo a los repuestos.</p>
+    <div class="cats" id="cats"></div>
+  </div>
+</section>
+
+<section class="feat">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="eyebrow">Destacados</div>
+        <h2 class="h-sec">Repuestos que mantienen la ruta</h2>
+      </div>
+      <a class="btn btn-ghost" href="catalogo.html">Ver todo el catálogo →</a>
+    </div>
+    <div class="grid" id="dest"></div>
+  </div>
+</section>
+
+<section id="cotizar">
+  <div class="wrap">
+    <div class="eyebrow">Cómo cotizar</div>
+    <h2 class="h-sec">Tres pasos, sin complicaciones</h2>
+    <div class="steps">
+      <div class="step"><b>Busca tu repuesto</b><p>Usa el buscador por nombre, marca o referencia, o entra por categoría.</p></div>
+      <div class="step"><b>Revisa la ficha</b><p>Mira la foto real, la marca, la referencia y con qué vehículos es compatible.</p></div>
+      <div class="step"><b>Cotiza por WhatsApp</b><p>Toca «Solicitar cotización» y el mensaje se arma solo con el producto y la referencia.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="contacto">
+  <div class="wrap">
+    <div>
+      <h2>¿Buscas una referencia específica?</h2>
+      <p>Cuéntanos qué repuesto necesitas o envíanos la referencia, y te ayudamos a consultar disponibilidad y precio.</p>
+    </div>
+    <a class="btn" data-wa data-ico="_wa">Escríbenos por WhatsApp</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="index.html"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+        <p style="margin-top:14px;max-width:340px">Repuestos para buses y camiones. Tu equipo en movimiento.</p>
+      </div>
+      <div><h4>Sitio</h4><ul><li><a href="index.html">Inicio</a></li><li><a href="catalogo.html">Catálogo</a></li><li><a href="#cotizar">Cómo cotizar</a></li></ul></div>
+      <div><h4>Contacto</h4><ul><li><a data-wa>WhatsApp</a></li></ul></div>
+    </div>
+    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. Scania y las demás marcas mencionadas pertenecen a sus respectivos dueños y se usan solo para indicar compatibilidad.</div>
+  </div>
+</footer>
+
+<a class="wa-float" data-wa data-ico="_wa" aria-label="WhatsApp"></a>
+
+<script src="config.js"></script>
+<script src="productos.js"></script>
+<script src="app.js"></script>
+<script>
+  const P = window.PRODUCTOS || [], {esc, icono, card} = APP;
+  const cats = [...new Set(P.map(p => p.categoria))];
+  document.getElementById('nProd').textContent = P.length;
+  document.getElementById('nCat').textContent = cats.length;
+
+  const n = c => P.filter(p => p.categoria === c).length;
+  document.getElementById('cats').innerHTML = cats.map(c =>
+    `<a class="cat" href="catalogo.html?cat=${encodeURIComponent(c)}">${icono(c)}<div><b>${esc(c)}</b><br><small>${n(c)} ${n(c)===1?'repuesto':'repuestos'}</small></div></a>`).join('');
+
+  const ids = (CONFIG.destacados || []);
+  const dest = ids.map(id => P.find(p => p.id === id)).filter(Boolean);
+  document.getElementById('dest').innerHTML = (dest.length ? dest : P.slice(-6)).map(card).join('');
+
+  const col = (dest.length >= 3 ? dest : P).slice(0, 3);
+  document.getElementById('collage').innerHTML = col.map((p, i) =>
+    `<a class="ph p${i+1}" href="catalogo.html#${esc(p.id)}"><img src="${esc(p.imagen)}" alt="${esc(p.nombre)}"></a>`).join('') +
+    `<div class="badge"><small>Fotos reales</small>de nuestro inventario</div>`;
+</script>
+</body>
+</html>
