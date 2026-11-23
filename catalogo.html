@@ -6,11 +6,8 @@
 <title>Catálogo · Conexión Scania</title>
 <meta name="description" content="Catálogo de repuestos para buses y camiones Scania. Busca por nombre, marca o referencia y cotiza por WhatsApp.">
 <meta name="theme-color" content="#101D32">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="cotizacion.css">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/cotizacion.css">
 <style>
   .phead{position:relative;overflow:hidden;padding:48px 0 28px;background:radial-gradient(900px 380px at 85% 0%,#22406a 0%,transparent 60%),linear-gradient(180deg,#0d1829,var(--navy))}
   .phead .stripes{width:220px;height:90px;right:-30px;top:36px;opacity:.35}
@@ -46,7 +43,9 @@
   dialog::backdrop{background:rgba(5,10,18,.8);backdrop-filter:blur(3px)}
   .dlg{display:grid;grid-template-columns:1fr 1.05fr}
   .dlg .img{background:#0c1626}
-  .dlg .img{display:flex;flex-direction:column}
+  .dlg .img{display:flex;flex-direction:column;position:relative}
+  .dlg .full{display:inline-flex;align-items:center;gap:6px;color:#c9ced6;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+  .dlg .full:hover{color:#fff}
   .dlg .img .main{width:100%;object-fit:cover;display:block;aspect-ratio:3/4;flex:1}
   .thumbs{display:flex;gap:8px;padding:10px;background:#0a1220}
   .thumbs button{flex:0 0 64px;height:64px;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:none;cursor:pointer;opacity:.6}
@@ -77,12 +76,12 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+    <a class="brand" href="/" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
     <button class="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
     <nav class="nav">
-      <a href="index.html">Inicio</a>
-      <a href="catalogo.html" class="on">Catálogo</a>
-      <a href="index.html#categorias">Categorías</a>
+      <a href="/">Inicio</a>
+      <a href="/catalogo" class="on">Catálogo</a>
+      <a href="/#categorias">Categorías</a>
       <a href="#" data-cot-open>Mi cotización <b data-cot-count>0</b></a>
       <a class="btn btn-red" data-wa data-ico="_wa">Cotizar por WhatsApp</a>
     </nav>
@@ -92,7 +91,7 @@
 <div class="phead">
   <div class="stripes"></div>
   <div class="wrap">
-    <div class="crumbs"><a href="index.html">Inicio</a> › Catálogo</div>
+    <div class="crumbs"><a href="/">Inicio</a> › Catálogo</div>
     <h1>Catálogo de <em>repuestos</em></h1>
   </div>
 </div>
@@ -122,17 +121,17 @@
 
 <footer>
   <div class="wrap">
-    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. Scania y las demás marcas mencionadas pertenecen a sus respectivos dueños y se usan solo para indicar compatibilidad. · <a href="privacidad.html">Privacidad, cookies y términos</a></div>
+    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. Scania y las demás marcas mencionadas pertenecen a sus respectivos dueños y se usan solo para indicar compatibilidad. · <a href="/privacidad">Privacidad, cookies y términos</a></div>
   </div>
 </footer>
 
 <a class="wa-float" data-wa data-ico="_wa" aria-label="WhatsApp"></a>
 
-<script src="config.js"></script>
-<script src="productos.js"></script>
-<script src="app.js"></script>
+<script src="/config.js"></script>
+<script src="/productos.js"></script>
+<script src="/app.js"></script>
 <script>
-  const P = window.PRODUCTOS || [], {esc, icono, card, wa, msgProducto, ICONOS, fotos} = APP;
+  const P = window.PRODUCTOS || [], {esc, icono, card, wa, msgProducto, ICONOS, fotos, urlProducto, sugerir, zoom} = APP;
   const $ = id => document.getElementById(id);
   const grid = $('grid'), q = $('q'), chips = $('chips'), count = $('count'), marcaSel = $('marca'), clear = $('clear');
   const dlg = $('dlg'), dlgc = $('dlgc');
@@ -175,8 +174,9 @@
     const p = P.find(x => x.id === id); if (!p) return;
     const rel = P.filter(x => x.categoria === p.categoria && x.id !== p.id).slice(0, 3), f = fotos(p);
     dlgc.innerHTML = `<div class="dlg">
-      <div class="img"><img class="main" src="${esc(f[0])}" alt="${esc(p.nombre)}">${f.length > 1 ? `<div class="thumbs">${f.map((u, i) =>
-        `<button type="button" class="${i ? '' : 'on'}" data-foto="${esc(u)}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}</div>
+      <div class="img"><div style="position:relative;flex:1;display:flex"><img class="main zoomable" src="${esc(f[0])}" alt="${esc(p.nombre)}" data-i="0">
+        <span class="zoom-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/></svg>Toca para ampliar</span></div>${f.length > 1 ? `<div class="thumbs">${f.map((u, i) =>
+        `<button type="button" class="${i ? '' : 'on'}" data-foto="${esc(u)}" data-i="${i}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}</div>
       <div class="body">
         <span class="tag">${esc(p.categoria)}</span>
         <h2>${esc(p.nombre)}</h2>
@@ -191,6 +191,7 @@
           <button type="button" class="btn btn-red" data-cot-add="${esc(p.id)}">Agregar a mi cotización</button>
           <a class="btn btn-wa" target="_blank" rel="noopener" href="${esc(wa(msgProducto(p)))}">${ICONOS._wa}Preguntar por WhatsApp</a>
         </div>
+        <a class="full" href="${esc(urlProducto(p))}">Ver página del producto (para compartir) →</a>
         ${rel.length ? `<div class="rel"><h4>Otros repuestos de ${esc(p.categoria)}</h4><div class="r">${rel.map(r =>
           `<a href="#${esc(r.id)}"><img src="${esc(fotos(r)[0])}" alt="" loading="lazy"><span>${esc(r.nombre)}</span></a>`).join('')}</div></div>` : ''}
       </div></div>`;
@@ -198,16 +199,24 @@
     dlg.scrollTop = 0;
   }
 
-  grid.onclick = e => { if (e.target.closest('[data-cot-add]')) return; const c = e.target.closest('.card'); if (!c) return; e.preventDefault(); location.hash = c.dataset.id; };
-  dlgc.onclick = e => { const t = e.target.closest('[data-foto]'); if (!t) return;
-    dlgc.querySelector('.main').src = t.dataset.foto; dlgc.querySelectorAll('.thumbs button').forEach(b => b.classList.toggle('on', b === t)); };
+  // Clic en una tarjeta: vista rápida en el mismo catálogo (Ctrl/Cmd + clic abre la página del producto).
+  grid.onclick = e => { if (e.target.closest('[data-cot-add]') || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const c = e.target.closest('.card'); if (!c) return; e.preventDefault(); location.hash = c.dataset.id; };
+  dlgc.onclick = e => {
+    const main = dlgc.querySelector('.main');
+    if (e.target === main){ const p = P.find(x => x.id === decodeURIComponent(location.hash.slice(1))); if (p) zoom(fotos(p), +main.dataset.i); return; }
+    const t = e.target.closest('[data-foto]'); if (!t) return;
+    main.src = t.dataset.foto; main.dataset.i = t.dataset.i; dlgc.querySelectorAll('.thumbs button').forEach(b => b.classList.toggle('on', b === t)); };
+  sugerir(q, { alElegir: p => { location.hash = p.id; return true; }, alBuscar: () => render() });
   addEventListener('hashchange', () => location.hash.length > 1 ? abrir(decodeURIComponent(location.hash.slice(1))) : dlg.close());
   dlg.addEventListener('close', () => { if (location.hash) history.replaceState(null, '', location.pathname + location.search); });
-  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('click', e => { if (e.target === dlg && !dlg.querySelector('.pswp--open')) dlg.close(); });
+  // Escape con el zoom abierto cierra solo el zoom, no la ficha.
+  dlg.addEventListener('cancel', e => { if (dlg.querySelector('.pswp')) e.preventDefault(); });
 
   render();
   if (location.hash.length > 1) abrir(decodeURIComponent(location.hash.slice(1)));
 </script>
-<script src="cotizacion.js"></script>
+<script src="/cotizacion.js"></script>
 </body>
 </html>

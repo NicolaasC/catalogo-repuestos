@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de cotizaciones · Conexión Scania</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#101D32">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body{min-height:100vh}
+  .bar{position:sticky;top:0;z-index:20;background:rgba(16,29,50,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;gap:16px;height:64px}
+  .bar h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:24px;margin-right:auto}
+  .bar h1 span{color:var(--red2)}
+  .lnk{background:none;border:0;color:#c9ced6;font:inherit;font-size:14px;cursor:pointer}
+  .lnk:hover{color:#fff}
+  .login{max-width:380px;margin:12vh auto 0;background:var(--navy2);border:1px solid var(--line);border-top:4px solid var(--red);border-radius:16px;padding:28px}
+  .login h2{font-family:var(--display);text-transform:uppercase;font-size:30px;margin-bottom:6px}
+  .login p{color:var(--gray);font-size:14px;margin-bottom:18px}
+  label{display:block;font-size:13px;color:#d3d8df;margin-bottom:12px}
+  input,select,textarea{display:block;width:100%;margin-top:5px;background:var(--navy);border:1px solid var(--line);color:var(--white);padding:11px 12px;border-radius:10px;font:inherit;font-size:15px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent}
+  .err{color:#ff8a8a;font-size:13px;min-height:18px;margin:4px 0 10px}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:18px 0}
+  .tools input{flex:1 1 240px;margin:0}
+  .chip{background:var(--navy2);border:1px solid var(--line);color:#c3c9d2;padding:8px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .chip.on{background:var(--red);border-color:var(--red);color:#fff}
+  .chip b{opacity:.75;margin-left:4px}
+  .list{display:grid;gap:14px;padding-bottom:60px}
+  .q{background:var(--navy2);border:1px solid var(--line);border-left:4px solid var(--gray);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+  .q[data-e="nueva"]{border-left-color:var(--red)} .q[data-e="cotizada"]{border-left-color:#f0b429}
+  .q[data-e="ganada"]{border-left-color:#25D366} .q[data-e="perdida"],.q[data-e="descartada"]{opacity:.7}
+  .q h3{font-family:var(--display);font-size:24px;text-transform:uppercase;line-height:1}
+  .q .cod{font-family:var(--display);color:var(--red2);font-size:15px;letter-spacing:.08em}
+  .q .meta{color:var(--gray);font-size:13px;margin:4px 0 10px}
+  .q ul{list-style:none;font-size:14px;display:grid;gap:4px;margin-bottom:8px}
+  .q li b{color:#fff}
+  .q .otros,.q .com{font-size:14px;color:#d3d8df;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;margin-top:6px}
+  .q .side{display:flex;flex-direction:column;gap:8px}
+  .q .row{display:flex;gap:8px;flex-wrap:wrap}
+  .q .btn{padding:10px 14px;font-size:14px;flex:1 1 auto;justify-content:center}
+  .del{background:none;border:0;color:var(--gray);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;align-self:flex-end}
+  .del:hover{color:#ff8a8a}
+  .vacio{color:var(--gray);text-align:center;padding:60px 0}
+  .ok{color:#7be3a4;font-size:12px}
+  @media (max-width:760px){.q{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="wrap"><h1>Panel de <span>cotizaciones</span></h1>
+  <button class="lnk" id="recargar" hidden>↻ Actualizar</button><button class="lnk" id="salir" hidden>Salir</button></div></div>
+
+<main class="wrap">
+  <form class="login" id="login" hidden>
+    <h2>Ingresar</h2>
+    <p>Acceso solo para el administrador del catálogo.</p>
+    <label>Correo<input name="email" type="email" autocomplete="username" required></label>
+    <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lerr"></p>
+    <button class="btn btn-red" style="width:100%;justify-content:center">Entrar</button>
+  </form>
+
+  <section id="panel" hidden>
+    <div class="tools">
+      <input id="buscar" type="search" placeholder="Buscar por nombre, ciudad, código, repuesto…">
+      <div id="filtros" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div class="list" id="lista"></div>
+  </section>
+</main>
+
+<script src="/config.js"></script>
+<script src="/vendor/supabase-2.119.0.js"></script>
+<script>
+  const C = window.CONFIG, sb = supabase.createClient(C.supabase.url, C.supabase.key);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ESTADOS = ['nueva', 'cotizada', 'ganada', 'perdida', 'descartada'];
+  let filas = [], filtro = 'nueva';
+
+  // Celular colombiano de 10 dígitos → formato internacional para WhatsApp.
+  const telWa = t => { let d = String(t).replace(/\D/g, ''); if (d.length === 10 && d[0] === '3') d = '57' + d; return d; };
+  const fecha = s => new Date(s).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+
+  async function iniciar(){
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session){ $('login').hidden = false; $('panel').hidden = $('salir').hidden = $('recargar').hidden = true; return; }
+    const { data: admin } = await sb.rpc('es_admin');
+    if (!admin){ $('login').hidden = false; $('lerr').textContent = 'Este usuario no tiene permiso de administrador.'; await sb.auth.signOut(); return; }
+    $('login').hidden = true; $('panel').hidden = $('salir').hidden = $('recargar').hidden = false;
+    cargar();
+  }
+
+  $('login').onsubmit = async e => {
+    e.preventDefault(); $('lerr').textContent = '';
+    const f = new FormData(e.target);
+    const { error } = await sb.auth.signInWithPassword({ email: f.get('email'), password: f.get('password') });
+    if (error) { $('lerr').textContent = 'Correo o contraseña incorrectos.'; return; }
+    iniciar();
+  };
+  $('salir').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  $('recargar').onclick = () => cargar();
+  $('buscar').oninput = pintar;
+
+  async function cargar(){
+    $('lista').innerHTML = '<p class="vacio">Cargando…</p>';
+    const { data, error } = await sb.from('cotizaciones').select('*').order('created_at', { ascending: false }).limit(500);
+    if (error) { $('lista').innerHTML = `<p class="vacio">No se pudieron cargar: ${esc(error.message)}</p>`; return; }
+    filas = data; pintar();
+  }
+
+  function pintar(){
+    const n = e => filas.filter(f => f.estado === e).length;
+    $('filtros').innerHTML = ['todas', ...ESTADOS].map(e => `<button class="chip${e === filtro ? ' on' : ''}" data-f="${e}">${e[0].toUpperCase() + e.slice(1)}<b>${e === 'todas' ? filas.length : n(e)}</b></button>`).join('');
+    const q = $('buscar').value.trim().toLowerCase();
+    const lista = filas.filter(f => (filtro === 'todas' || f.estado === filtro) &&
+      (!q || JSON.stringify(f).toLowerCase().includes(q)));
+    $('lista').innerHTML = lista.length ? lista.map(f => `
+      <article class="q" data-e="${esc(f.estado)}" data-id="${esc(f.id)}">
+        <div>
+          <div class="cod">N.º ${esc(f.codigo)} · ${fecha(f.created_at)}</div>
+          <h3>${esc(f.nombre)}</h3>
+          <div class="meta">${esc([f.empresa, f.ciudad, f.telefono, f.email, f.vehiculo].filter(Boolean).join(' · '))}</div>
+          <ul>${(f.productos || []).map(p => `<li><b>${p.cantidad}×</b> ${esc(p.nombre)}${p.referencia ? ` <span style="color:var(--gray)">Ref. ${esc(p.referencia)}</span>` : ''}</li>`).join('')}</ul>
+          ${f.otros_repuestos ? `<div class="otros"><b>No está en el catálogo:</b> ${esc(f.otros_repuestos)}</div>` : ''}
+          ${f.comentario ? `<div class="com"><b>Comentario:</b> ${esc(f.comentario)}</div>` : ''}
+        </div>
+        <div class="side">
+          <label>Estado<select data-campo="estado">${ESTADOS.map(e => `<option${e === f.estado ? ' selected' : ''}>${e}</option>`).join('')}</select></label>
+          <label>Notas internas<textarea data-campo="notas" rows="2" placeholder="Precio enviado, proveedor, seguimiento…">${esc(f.notas)}</textarea></label>
+          <span class="ok" data-ok></span>
+          <div class="row">
+            <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${telWa(f.telefono)}?text=${encodeURIComponent(`Hola ${f.nombre.split(' ')[0]}, te escribimos de ${C.nombre} sobre tu cotización N.º ${f.codigo}.`)}">Responder</a>
+            <a class="btn btn-ghost" href="tel:${esc(f.telefono.replace(/[^\d+]/g, ''))}">Llamar</a>
+          </div>
+          <button class="del" data-borrar>Eliminar (solicitud del cliente)</button>
+        </div>
+      </article>`).join('') : '<p class="vacio">No hay cotizaciones en este filtro.</p>';
+  }
+
+  $('filtros').onclick = e => { const b = e.target.closest('[data-f]'); if (b){ filtro = b.dataset.f; pintar(); } };
+
+  async function guardar(art, cambios){
+    const id = art.dataset.id, ok = art.querySelector('[data-ok]');
+    const { error } = await sb.from('cotizaciones').update({ ...cambios, actualizado_en: new Date().toISOString() }).eq('id', id);
+    ok.textContent = error ? '⚠ No se guardó: ' + error.message : '✓ Guardado';
+    if (!error) Object.assign(filas.find(f => f.id === id), cambios);
+  }
+  $('lista').addEventListener('change', e => {
+    const art = e.target.closest('.q'), campo = e.target.dataset.campo; if (!art || !campo) return;
+    guardar(art, { [campo]: e.target.value }).then(() => { if (campo === 'estado') art.dataset.e = e.target.value; });
+  });
+  $('lista').addEventListener('click', async e => {
+    if (!e.target.closest('[data-borrar]')) return;
+    const art = e.target.closest('.q');
+    if (!confirm('¿Eliminar definitivamente esta cotización y los datos del cliente? No se puede deshacer.')) return;
+    const { error } = await sb.from('cotizaciones').delete().eq('id', art.dataset.id);
+    if (error) return alert('No se pudo eliminar: ' + error.message);
+    filas = filas.filter(f => f.id !== art.dataset.id); pintar();
+  });
+
+  sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') { $('panel').hidden = true; } });
+  iniciar();
+</script>
+</body>
+</html>

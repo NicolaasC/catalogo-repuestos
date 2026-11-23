@@ -37,3 +37,46 @@ create policy "publico_inserta_cotizacion" on public.cotizaciones
 
 -- Tú ves y gestionas los datos desde el panel de Supabase (Table Editor),
 -- que usa permisos de administrador y no necesita políticas adicionales.
+
+-- ------------------------------------------------------------------
+-- v1.1 · Repuestos fuera del catálogo y panel privado (/admin)
+-- ------------------------------------------------------------------
+alter table public.cotizaciones add column if not exists otros_repuestos text check (char_length(otros_repuestos) <= 1000);
+alter table public.cotizaciones add column if not exists actualizado_en timestamptz;
+alter table public.cotizaciones drop constraint if exists cotizaciones_productos_check;
+alter table public.cotizaciones add constraint cotizaciones_productos_check
+  check (jsonb_typeof(productos) = 'array' and jsonb_array_length(productos) <= 100);
+alter table public.cotizaciones drop constraint if exists cotizaciones_algo_que_cotizar;
+alter table public.cotizaciones add constraint cotizaciones_algo_que_cotizar
+  check (jsonb_array_length(productos) >= 1 or char_length(coalesce(otros_repuestos, '')) >= 3);
+grant insert (otros_repuestos) on public.cotizaciones to anon;
+
+-- Quién puede entrar al panel: usuarios de Supabase Auth listados aquí.
+create table if not exists public.admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  creado_en timestamptz not null default now()
+);
+alter table public.admins enable row level security;
+revoke all on public.admins from anon, authenticated;
+grant select on public.admins to authenticated;
+drop policy if exists "admin_se_ve" on public.admins;
+create policy "admin_se_ve" on public.admins for select to authenticated using (user_id = (select auth.uid()));
+
+create or replace function public.es_admin() returns boolean
+  language sql stable security definer set search_path = '' as
+$$ select exists (select 1 from public.admins where user_id = (select auth.uid())) $$;
+revoke all on function public.es_admin() from public, anon;
+grant execute on function public.es_admin() to authenticated;
+
+-- El administrador lee, cambia estado/notas y elimina (solicitudes Habeas Data). No puede alterar los datos del cliente.
+grant select, delete on public.cotizaciones to authenticated;
+grant update (estado, notas, actualizado_en) on public.cotizaciones to authenticated;
+drop policy if exists "admin_lee" on public.cotizaciones;
+drop policy if exists "admin_actualiza" on public.cotizaciones;
+drop policy if exists "admin_borra" on public.cotizaciones;
+create policy "admin_lee" on public.cotizaciones for select to authenticated using ((select public.es_admin()));
+create policy "admin_actualiza" on public.cotizaciones for update to authenticated using ((select public.es_admin())) with check ((select public.es_admin()));
+create policy "admin_borra" on public.cotizaciones for delete to authenticated using ((select public.es_admin()));
+
+-- Para dar acceso: crea el usuario en Authentication → Users y luego:
+-- insert into public.admins (user_id) select id from auth.users where email = 'TU_CORREO';

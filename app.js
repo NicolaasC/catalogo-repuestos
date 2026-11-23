@@ -14,7 +14,11 @@
       ` ¿Me pueden confirmar disponibilidad y precio?`;
   }
   // Fotos del producto: usa "imagenes: [...]" si existe; si no, "imagen" (+ "imagen2" opcional).
-  const fotos = p => (Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen, p.imagen2]).filter(Boolean);
+  // Las rutas son absolutas para que funcionen también en /producto/<id>.
+  const ruta = u => !u || /^(https?:|\/)/.test(u) ? u : '/' + u;
+  const fotos = p => (Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen, p.imagen2]).filter(Boolean).map(ruta);
+  const urlProducto = p => '/producto/' + encodeURIComponent(p.id);
+  const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   const I = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICONOS = {
@@ -36,7 +40,7 @@
   function card(p){
     const f = fotos(p);
     return `<div class="card${f.length > 1 ? ' dos' : ''}" data-id="${esc(p.id)}">
-      <a class="card-link" href="catalogo.html#${esc(p.id)}">
+      <a class="card-link" href="${esc(urlProducto(p))}">
         <div class="ph"><img src="${esc(f[0])}" alt="${esc(p.nombre)}" loading="lazy">${f[1] ? `<img class="alt" src="${esc(f[1])}" alt="" loading="lazy">
           <span class="nfotos">${ICONOS._fotos}${f.length}</span>` : ''}</div>
         <div class="info">
@@ -48,6 +52,67 @@
     </div>`;
   }
 
+  // ---------- Buscador con sugerencias (foto + referencia) ----------
+  // Busca en nombre, referencia, marca y categoría; ignora tildes, puntos y guiones.
+  function buscar(q, lista){
+    const terms = norm(q).split(/\s+/).filter(Boolean); if (!terms.length) return [];
+    const sinSignos = s => s.replace(/[.\s-]/g, '');
+    return lista.map(p => {
+      const nom = norm(p.nombre), ref = norm(p.referencia), todo = norm([p.nombre, p.marca, p.categoria, p.referencia, p.compatible, p.descripcion].join(' '));
+      if (!terms.every(w => todo.includes(w) || sinSignos(todo).includes(sinSignos(w)))) return null;
+      const w0 = terms[0];
+      const puntos = (ref && sinSignos(ref).startsWith(sinSignos(w0)) ? 4 : 0) + (nom.startsWith(w0) ? 3 : 0) + (nom.includes(w0) ? 2 : 0);
+      return { p, puntos };
+    }).filter(Boolean).sort((a, b) => b.puntos - a.puntos).map(x => x.p);
+  }
+  function resaltar(txt, q){
+    let h = esc(txt);
+    norm(q).split(/\s+/).filter(w => w.length > 1).forEach(w => {
+      const i = norm(txt).indexOf(w); if (i < 0) return;
+      const ori = String(txt).substr(i, w.length);
+      h = h.replace(esc(ori), '<mark>' + esc(ori) + '</mark>');
+    });
+    return h;
+  }
+  // opciones.alElegir(p, evento): si devuelve true, no se navega a la página del producto.
+  // opciones.alBuscar(q): Enter sin elegir sugerencia (por defecto va al catálogo filtrado).
+  function sugerir(input, opciones = {}){
+    const P = window.PRODUCTOS || [];
+    const box = document.createElement('div'); box.className = 'sug'; box.hidden = true; box.setAttribute('role', 'listbox');
+    input.parentElement.style.position = 'relative'; input.parentElement.appendChild(box);
+    input.setAttribute('autocomplete', 'off'); input.setAttribute('aria-autocomplete', 'list');
+    let res = [], sel = -1;
+    const pintar = () => {
+      const q = input.value.trim(); res = q.length < 2 ? [] : buscar(q, P).slice(0, 6); sel = -1;
+      box.hidden = !res.length && q.length < 2;
+      box.innerHTML = res.map((p, i) => `<a href="${esc(urlProducto(p))}" data-i="${i}" role="option">
+          <img src="${esc(fotos(p)[0])}" alt="" loading="lazy"><span><b>${resaltar(p.nombre, q)}</b>
+          <small>${p.referencia ? 'Ref. ' + resaltar(p.referencia, q) + ' · ' : ''}${esc(p.marca || p.categoria)}</small></span></a>`).join('') +
+        (q.length >= 2 ? `<a class="todo" href="/catalogo?q=${encodeURIComponent(q)}" data-todo>${res.length ? 'Ver todos los resultados' : 'Sin coincidencias: pregúntanos por WhatsApp'} →</a>` : '');
+      if (q.length >= 2 && !res.length) box.querySelector('[data-todo]').href = wa('Hola, estoy buscando este repuesto: ' + q + '. ¿Lo tienen disponible?');
+    };
+    const marcar = () => box.querySelectorAll('[data-i]').forEach((a, i) => a.classList.toggle('on', i === sel));
+    input.addEventListener('input', pintar);
+    input.addEventListener('focus', () => { if (input.value.trim().length >= 2) pintar(); });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown' && res.length){ e.preventDefault(); sel = (sel + 1) % res.length; marcar(); }
+      else if (e.key === 'ArrowUp' && res.length){ e.preventDefault(); sel = (sel - 1 + res.length) % res.length; marcar(); }
+      else if (e.key === 'Escape'){ box.hidden = true; }
+      else if (e.key === 'Enter'){
+        e.preventDefault(); box.hidden = true;
+        if (sel >= 0) return elegir(res[sel], e);
+        opciones.alBuscar ? opciones.alBuscar(input.value.trim()) : (location.href = '/catalogo?q=' + encodeURIComponent(input.value.trim()));
+      }
+    });
+    function elegir(p, e){ box.hidden = true; if (!(opciones.alElegir && opciones.alElegir(p, e))) location.href = urlProducto(p); }
+    box.addEventListener('mousedown', e => e.preventDefault()); // evita que el input pierda el foco antes del clic
+    box.addEventListener('click', e => { const a = e.target.closest('[data-i]'); if (!a) return; e.preventDefault(); elegir(res[a.dataset.i], e); });
+    document.addEventListener('click', e => { if (!input.parentElement.contains(e.target)) box.hidden = true; });
+  }
+
+  // ---------- Zoom de fotos (PhotoSwipe, cargado solo cuando se usa) ----------
+  function zoom(lista, inicio = 0){ import('/zoom.js').then(m => m.abrir(lista, inicio)); }
+
   // Enlaces de WhatsApp genéricos y menú móvil
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-wa]').forEach(a => { a.href = wa(); a.target = '_blank'; a.rel = 'noopener'; });
@@ -57,10 +122,10 @@
     document.querySelectorAll('[data-year]').forEach(e => e.textContent = new Date().getFullYear());
     // La lista de cotización funciona en todas las páginas que muestran productos.
     if (!window.COT && window.PRODUCTOS){
-      document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="cotizacion.css">');
-      const s = document.createElement('script'); s.src = 'cotizacion.js'; document.body.appendChild(s);
+      document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="/cotizacion.css">');
+      const s = document.createElement('script'); s.src = '/cotizacion.js'; document.body.appendChild(s);
     }
   });
 
-  window.APP = { esc, wa, msgProducto, icono, card, fotos, ICONOS };
+  window.APP = { esc, wa, msgProducto, icono, card, fotos, ruta, urlProducto, norm, buscar, sugerir, zoom, ICONOS };
 })();

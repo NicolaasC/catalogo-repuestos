@@ -6,10 +6,7 @@
 <title>Conexión Scania · Repuestos para buses y camiones</title>
 <meta name="description" content="Conexión Scania: repuestos para buses y camiones. Motor, frenos, suspensión, caja, diferencial y más. Cotiza por WhatsApp.">
 <meta name="theme-color" content="#101D32">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="/styles.css">
 <style>
   /* ---------- Hero ---------- */
   .hero{position:relative;overflow:hidden;padding:72px 0 96px;
@@ -37,6 +34,25 @@
     .hero .wrap{grid-template-columns:1fr}
     .collage{height:420px;max-width:460px;margin:10px auto 0;width:100%}
   }
+
+  /* ---------- Buscador de portada ---------- */
+  .hsearch{display:flex;gap:10px;margin:0 0 22px;max-width:560px}
+  .hsearch .hs{position:relative;flex:1;min-width:0}
+  .hsearch .hs svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:var(--gray);pointer-events:none}
+  .hsearch input{width:100%;background:#fff;color:#101D32;border:0;border-radius:10px;padding:17px 16px 17px 50px;font:inherit;font-size:17px;box-shadow:0 14px 34px -14px rgba(0,0,0,.8)}
+  .hsearch input::placeholder{color:#6b7380}
+  .hsearch input:focus{outline:3px solid var(--red)}
+  .hsearch .btn{flex:none;font-size:18px}
+  .hsearch-tips{color:var(--gray);font-size:13px;margin:-12px 0 26px}
+  .hsearch-tips a{color:#c9ced6;text-decoration:underline;text-underline-offset:3px;margin-left:6px}
+  @media (max-width:520px){.hsearch .btn{display:none}.hero{padding-top:40px}.hero h1{margin-bottom:18px}.hero .lead{display:none}.hero .ctas .btn{flex:1;justify-content:center}}
+
+  /* ---------- Confianza ---------- */
+  .trust{background:var(--navy2);border-top:1px solid var(--line)}
+  .trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:32px}
+  .trust-item{background:var(--navy);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:12px;padding:22px 20px}
+  .trust-item b{display:block;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:24px;line-height:1;margin-bottom:8px}
+  .trust-item p{color:#c3c9d2;font-size:15px}
 
   /* ---------- Valores ---------- */
   .values{background:var(--navy2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:0}
@@ -86,11 +102,11 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+    <a class="brand" href="/" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
     <button class="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
     <nav class="nav">
-      <a href="index.html" class="on">Inicio</a>
-      <a href="catalogo.html">Catálogo</a>
+      <a href="/" class="on">Inicio</a>
+      <a href="/catalogo">Catálogo</a>
       <a href="#categorias">Categorías</a>
       <a href="#cotizar">Cómo cotizar</a>
       <a href="#contacto">Contacto</a>
@@ -106,8 +122,14 @@
       <div class="eyebrow">Repuestos para buses y camiones</div>
       <h1>Tu equipo en <em>movimiento.</em></h1>
       <p class="lead">Encuentra los repuestos que necesitas para mantener tu vehículo en marcha: motor, frenos y aire, suspensión, caja, diferencial y más, para buses y camiones Scania.</p>
+      <form class="hsearch" role="search" action="/catalogo" onsubmit="return false">
+        <label class="hs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input id="hq" name="q" type="search" placeholder="Referencia o nombre del repuesto" aria-label="Buscar repuesto por referencia o nombre"></label>
+        <button class="btn btn-red" type="button" id="hbtn">Buscar</button>
+      </form>
+      <p class="hsearch-tips">Ejemplos:<a href="/catalogo?q=filtro">filtro</a><a href="/catalogo?q=1889797">1889797</a><a href="/catalogo?q=compresor">compresor</a></p>
       <div class="ctas">
-        <a class="btn btn-red" href="catalogo.html">Explorar catálogo <span aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" href="/catalogo">Explorar catálogo <span aria-hidden="true">→</span></a>
         <a class="btn btn-ghost" data-wa data-ico="_wa">Escríbenos</a>
       </div>
       <div class="stats">
@@ -145,7 +167,7 @@
         <div class="eyebrow">Destacados</div>
         <h2 class="h-sec">Repuestos que mantienen la ruta</h2>
       </div>
-      <a class="btn btn-ghost" href="catalogo.html">Ver todo el catálogo →</a>
+      <a class="btn btn-ghost" href="/catalogo">Ver todo el catálogo →</a>
     </div>
     <div class="grid" id="dest"></div>
   </div>
@@ -157,9 +179,17 @@
     <h2 class="h-sec">Tres pasos, sin complicaciones</h2>
     <div class="steps">
       <div class="step"><b>Busca tu repuesto</b><p>Usa el buscador por nombre, marca o referencia, o entra por categoría.</p></div>
-      <div class="step"><b>Revisa la ficha</b><p>Mira la foto real, la marca, la referencia y con qué vehículos es compatible.</p></div>
-      <div class="step"><b>Cotiza por WhatsApp</b><p>Toca «Solicitar cotización» y el mensaje se arma solo con el producto y la referencia.</p></div>
+      <div class="step"><b>Arma tu lista</b><p>Toca «+ Agregar» en cada repuesto que necesites. Si algo no está en el catálogo, lo escribes en tu lista.</p></div>
+      <div class="step"><b>Envía por WhatsApp</b><p>Deja tus datos y envía la lista: el mensaje se arma solo con los repuestos, referencias y cantidades.</p></div>
     </div>
+  </div>
+</section>
+
+<section class="trust" id="confianza">
+  <div class="wrap">
+    <div class="eyebrow">Por qué cotizar con nosotros</div>
+    <h2 class="h-sec">Compra con tranquilidad</h2>
+    <div class="trust-grid" id="trust"></div>
   </div>
 </section>
 
@@ -177,10 +207,10 @@
   <div class="wrap">
     <div class="cols">
       <div>
-        <a class="brand" href="index.html"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+        <a class="brand" href="/"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
         <p style="margin-top:14px;max-width:340px">Repuestos para buses y camiones. Tu equipo en movimiento.</p>
       </div>
-      <div><h4>Sitio</h4><ul><li><a href="index.html">Inicio</a></li><li><a href="catalogo.html">Catálogo</a></li><li><a href="#cotizar">Cómo cotizar</a></li></ul></div>
+      <div><h4>Sitio</h4><ul><li><a href="/">Inicio</a></li><li><a href="/catalogo">Catálogo</a></li><li><a href="#cotizar">Cómo cotizar</a></li><li><a href="/privacidad">Privacidad y términos</a></li></ul></div>
       <div><h4>Contacto</h4><ul><li><a data-wa>WhatsApp</a></li></ul></div>
     </div>
     <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. Scania y las demás marcas mencionadas pertenecen a sus respectivos dueños y se usan solo para indicar compatibilidad.</div>
@@ -189,18 +219,23 @@
 
 <a class="wa-float" data-wa data-ico="_wa" aria-label="WhatsApp"></a>
 
-<script src="config.js"></script>
-<script src="productos.js"></script>
-<script src="app.js"></script>
+<script src="/config.js"></script>
+<script src="/productos.js"></script>
+<script src="/app.js"></script>
 <script>
-  const P = window.PRODUCTOS || [], {esc, icono, card} = APP;
+  const P = window.PRODUCTOS || [], {esc, icono, card, fotos, urlProducto, sugerir} = APP;
+  const hq = document.getElementById('hq');
+  sugerir(hq);
+  document.getElementById('hbtn').onclick = () => location.href = '/catalogo?q=' + encodeURIComponent(hq.value.trim());
+  document.getElementById('trust').innerHTML = (CONFIG.confianza || []).map(t => `<div class="trust-item"><b>${esc(t.titulo)}</b><p>${esc(t.texto)}</p></div>`).join('');
+  if (!(CONFIG.confianza || []).length) document.getElementById('confianza').remove();
   const cats = [...new Set(P.map(p => p.categoria))];
   document.getElementById('nProd').textContent = P.length;
   document.getElementById('nCat').textContent = cats.length;
 
   const n = c => P.filter(p => p.categoria === c).length;
   document.getElementById('cats').innerHTML = cats.map(c =>
-    `<a class="cat" href="catalogo.html?cat=${encodeURIComponent(c)}">${icono(c)}<div><b>${esc(c)}</b><br><small>${n(c)} ${n(c)===1?'repuesto':'repuestos'}</small></div></a>`).join('');
+    `<a class="cat" href="/catalogo?cat=${encodeURIComponent(c)}">${icono(c)}<div><b>${esc(c)}</b><br><small>${n(c)} ${n(c)===1?'repuesto':'repuestos'}</small></div></a>`).join('');
 
   const ids = (CONFIG.destacados || []);
   const dest = ids.map(id => P.find(p => p.id === id)).filter(Boolean);
@@ -208,7 +243,7 @@
 
   const col = (dest.length >= 3 ? dest : P).slice(0, 3);
   document.getElementById('collage').innerHTML = col.map((p, i) =>
-    `<a class="ph p${i+1}" href="catalogo.html#${esc(p.id)}"><img src="${esc(p.imagen)}" alt="${esc(p.nombre)}"></a>`).join('') +
+    `<a class="ph p${i+1}" href="${esc(urlProducto(p))}"><img src="${esc(fotos(p)[0])}" alt="${esc(p.nombre)}"></a>`).join('') +
     `<div class="badge"><small>Fotos reales</small>de nuestro inventario</div>`;
 </script>
 </body>

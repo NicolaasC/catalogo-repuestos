@@ -1,8 +1,8 @@
 // Lista de cotización: el cliente agrega repuestos, deja sus datos y se envía por WhatsApp.
 // Si CONFIG.supabase está configurado, la solicitud también se guarda en la tabla "cotizaciones".
 (function(){
-  const C = window.CONFIG || {}, P = window.PRODUCTOS || [], { esc, wa, ICONOS } = window.APP;
-  const KEY = 'cs_cotizacion_v1', AVISO = 'cs_aviso_almacenamiento_v1', POLITICA = 'v1-2026-11-23';
+  const C = window.CONFIG || {}, P = window.PRODUCTOS || [], { esc, wa, ICONOS, fotos } = window.APP;
+  const KEY = 'cs_cotizacion_v1', ULTIMA = 'cs_ultima_cotizacion_v1', AVISO = 'cs_aviso_almacenamiento_v1', POLITICA = 'v1.1-2026-11-23';
   const store = {
     get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
     set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
@@ -23,7 +23,8 @@
       <header><h2 id="cot-t">Mi cotización</h2><button type="button" class="cot-x" aria-label="Cerrar">×</button></header>
       <div class="cot-body">
         <ul class="cot-list"></ul>
-        <p class="cot-empty">Aún no has agregado repuestos. Abre un producto del catálogo y toca <b>“Agregar a mi cotización”</b>.</p>
+        <div class="cot-empty"><p>Aún no has agregado repuestos. Toca <b>“+ Agregar”</b> en cualquier repuesto del catálogo, o escribe abajo lo que necesitas si no lo encuentras.</p>
+          <button type="button" class="btn cot-repetir" hidden></button></div>
         <form class="cot-form" novalidate>
           <h3>Tus datos</h3>
           <label>Nombre completo *<input name="nombre" required minlength="2" maxlength="120" autocomplete="name"></label>
@@ -34,17 +35,19 @@
           </div>
           <label>Correo <span>(opcional)</span><input name="email" type="email" maxlength="160" autocomplete="email"></label>
           <label>Vehículo <span>(modelo, año o VIN, opcional)</span><input name="vehiculo" maxlength="120"></label>
+          <label>¿Necesitas algo que no está en el catálogo? <span>(opcional)</span><textarea name="otros" rows="2" maxlength="1000" placeholder="Ej: Bomba de agua Scania R440, ref. 1234567"></textarea>
+            <small class="cot-otros-ayuda">Escribe el nombre, la referencia o el modelo del vehículo.</small></label>
           <label>Comentarios <span>(opcional)</span><textarea name="comentario" rows="2" maxlength="1000"></textarea></label>
           <input class="cot-hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
           <label class="cot-ok"><input type="checkbox" name="acepta" required>
-            <span>Autorizo de forma previa, expresa e informada a ${esc((C.legal && C.legal.responsable) || C.nombre)} para tratar mis datos personales con el fin de responder esta solicitud de cotización y hacerle seguimiento, conforme a la <a href="privacidad.html" target="_blank">Política de tratamiento de datos</a> (Ley 1581 de 2012). *</span></label>
+            <span>Autorizo de forma previa, expresa e informada a ${esc((C.legal && C.legal.responsable) || C.nombre)} para tratar mis datos personales con el fin de responder esta solicitud de cotización y hacerle seguimiento, conforme a la <a href="/privacidad" target="_blank">Política de tratamiento de datos</a> (Ley 1581 de 2012). *</span></label>
           <p class="cot-err" role="alert"></p>
           <button class="btn btn-wa cot-send" type="submit">${ICONOS._wa}Enviar cotización por WhatsApp</button>
           <p class="cot-note">Se abrirá WhatsApp con tu solicitud lista para enviar. Los precios y la disponibilidad se confirman en la respuesta.</p>
         </form>
       </div>
     </aside>
-    <div class="cot-aviso" hidden><p>Usamos el almacenamiento de tu navegador solo para recordar tu lista de cotización. No usamos cookies publicitarias ni de seguimiento. <a href="privacidad.html#cookies">Más información</a></p><button type="button" class="btn btn-red">Entendido</button></div>`);
+    <div class="cot-aviso" hidden><p>Usamos el almacenamiento de tu navegador solo para recordar tu lista de cotización. No usamos cookies publicitarias ni de seguimiento. <a href="/privacidad#cookies">Más información</a></p><button type="button" class="btn btn-red">Entendido</button></div>`);
 
   const $ = s => document.querySelector(s);
   const panel = $('.cot'), back = $('.cot-back'), list = $('.cot-list'), form = $('.cot-form'), err = $('.cot-err'), fab = $('.cot-fab');
@@ -54,9 +57,11 @@
     document.querySelectorAll('[data-cot-count]').forEach(e => e.textContent = n);
     fab.hidden = n === 0;
     $('.cot-empty').hidden = n > 0;
-    form.hidden = n === 0;
+    const ult = store.get(ULTIMA, []).filter(i => P.some(p => p.id === i.id)), rep = $('.cot-repetir');
+    rep.hidden = n > 0 || !ult.length;
+    rep.textContent = `↻ Repetir mi última cotización (${ult.length} ${ult.length === 1 ? 'repuesto' : 'repuestos'})`;
     list.innerHTML = items.map(i => { const p = prod(i.id); return `
-      <li data-id="${esc(i.id)}"><img src="${esc(p.imagen)}" alt="" loading="lazy">
+      <li data-id="${esc(i.id)}"><img src="${esc(fotos(p)[0])}" alt="" loading="lazy">
         <div><b>${esc(p.nombre)}</b><small>${esc([p.marca, p.referencia && 'Ref. ' + p.referencia].filter(Boolean).join(' · '))}</small></div>
         <div class="cot-qty"><button type="button" data-d="-1" aria-label="Menos">−</button><span>${i.cantidad}</span><button type="button" data-d="1" aria-label="Más">+</button></div>
         <button type="button" class="cot-rm" aria-label="Quitar ${esc(p.nombre)}">×</button></li>`; }).join('');
@@ -83,6 +88,7 @@
     }
     if (e.target.closest('[data-cot-open]')){ e.preventDefault(); const d = document.getElementById('dlg'); if (d && d.open) d.close(); abrir(); }
   });
+  $('.cot-repetir').onclick = () => { items = store.get(ULTIMA, []).filter(i => P.some(p => p.id === i.id)); guardar(); };
   back.onclick = cerrar; panel.querySelector('.cot-x').onclick = cerrar;
   addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) cerrar(); });
   list.onclick = e => {
@@ -116,6 +122,9 @@
     e.preventDefault(); err.textContent = '';
     const f = Object.fromEntries(new FormData(form)); Object.keys(f).forEach(k => f[k] = String(f[k]).trim());
     if (f.sitio_web) return; // bot
+    if (!items.length && f.otros.length < 3){
+      err.textContent = 'Agrega al menos un repuesto del catálogo o escribe lo que necesitas.'; form.otros.focus(); return;
+    }
     if (!form.checkValidity() || !/^[+\d][\d\s().-]{6,19}$/.test(f.telefono)){
       const soloFalta = [...form.querySelectorAll(':invalid')].every(x => x.name === 'acepta') && /^[+\d][\d\s().-]{6,19}$/.test(f.telefono);
       err.textContent = soloFalta ? 'Para enviar la solicitud debes aceptar la política de tratamiento de datos.' : 'Revisa los campos obligatorios (*) y el número de celular.';
@@ -126,17 +135,19 @@
     const codigo = (id || Date.now().toString(36)).replace(/-/g, '').slice(0, 6).toUpperCase();
     const productos = items.map(i => { const p = prod(i.id); return { id: p.id, nombre: p.nombre, referencia: p.referencia || null, marca: p.marca || null, cantidad: i.cantidad }; });
     const fila = { nombre: f.nombre, telefono: f.telefono, ciudad: f.ciudad, empresa: f.empresa || null, email: f.email || null,
-      vehiculo: f.vehiculo || null, comentario: f.comentario || null, productos, codigo,
+      vehiculo: f.vehiculo || null, comentario: f.comentario || null, otros_repuestos: f.otros || null, productos, codigo,
       acepta_tratamiento: true, version_politica: POLITICA, origen: location.hostname };
     if (id) fila.id = id;
     await guardarEnSupabase(fila);
 
     const lineas = productos.map((p, n) => `${n + 1}. ${p.nombre}${p.referencia ? ' (Ref. ' + p.referencia + ')' : ''} — Cant: ${p.cantidad}`);
-    const msg = [`Hola, quiero solicitar una cotización (N.º ${codigo}):`, '', ...lineas, '',
+    const msg = [`Hola, quiero solicitar una cotización (N.º ${codigo}):`, '', ...lineas,
+      f.otros ? (lineas.length ? '\n' : '') + `Repuestos que no están en el catálogo: ${f.otros}` : null, '',
       `Nombre: ${f.nombre}`, f.empresa ? `Empresa: ${f.empresa}` : null, `Ciudad: ${f.ciudad}`, `Celular: ${f.telefono}`,
       f.email ? `Correo: ${f.email}` : null, f.vehiculo ? `Vehículo: ${f.vehiculo}` : null, f.comentario ? `Comentarios: ${f.comentario}` : null
     ].filter(x => x !== null).join('\n');
 
+    if (items.length) store.set(ULTIMA, items);
     items = []; guardar(); form.reset(); btn.disabled = false; cerrar();
     location.href = wa(msg);
   };

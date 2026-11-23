@@ -39,10 +39,12 @@
 .cot-send{justify-content:center;width:100%}
 .cot-send:disabled{opacity:.6}
 .cot-note{color:var(--gray);font-size:12px;margin:0}
-[data-cot-add].on{background:transparent;border:1px solid var(--red);color:#fff}
+[data-cot-add].btn.on{background:transparent;border:1px solid var(--red);color:#fff}
 .cot-aviso{position:fixed;left:16px;right:16px;bottom:16px;z-index:70;max-width:640px;margin:0 auto;background:#0c1626;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:13px;color:#c3c9d2}
 .cot-aviso p{margin:0;flex:1}
 .cot-aviso a{color:#fff;text-decoration:underline}
 .cot-aviso .btn{flex:none;padding:10px 16px}
 .legal a{text-decoration:underline}
 @media (max-width:520px){.cot-2{grid-template-columns:1fr}.cot-aviso{flex-direction:column;align-items:stretch}}
+.cot-repetir{display:flex;width:100%;justify-content:center;margin:4px 0 8px;background:transparent;border:1px solid rgba(244,245,247,.35);color:#fff}
+.cot-otros-ayuda{display:block;color:var(--gray);font-size:12px;margin-top:4px;font-weight:400}

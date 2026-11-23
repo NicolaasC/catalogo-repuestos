@@ -1,0 +1,12 @@
+{
+  "name": "catalogo-repuestos",
+  "private": true,
+  "description": "Catálogo de repuestos Conexión Scania",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "imagenes": "node tools/optimizar-imagenes.mjs fotos img"
+  },
+  "devDependencies": {
+    "sharp": "0.35.5"
+  }
+}

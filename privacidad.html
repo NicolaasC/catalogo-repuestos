@@ -6,11 +6,8 @@
 <title>Privacidad y términos · Conexión Scania</title>
 <meta name="description" content="Política de tratamiento de datos personales, uso de cookies y términos de uso del catálogo de Conexión Scania.">
 <meta name="theme-color" content="#101D32">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="cotizacion.css">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/cotizacion.css">
 <style>
   .phead{padding:48px 0 28px;background:linear-gradient(180deg,#0d1829,var(--navy))}
   .phead h1{font-family:var(--display);font-weight:800;font-style:italic;text-transform:uppercase;font-size:clamp(38px,6vw,64px);line-height:.95}
@@ -33,18 +30,18 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
+    <a class="brand" href="/" aria-label="Conexión Scania, inicio"><span class="b1">Conexión</span><span class="b2">Scania</span></a>
     <button class="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
     <nav class="nav">
-      <a href="index.html">Inicio</a>
-      <a href="catalogo.html">Catálogo</a>
-      <a href="catalogo.html" data-cot-open>Mi cotización <b data-cot-count>0</b></a>
+      <a href="/">Inicio</a>
+      <a href="/catalogo">Catálogo</a>
+      <a href="/catalogo" data-cot-open>Mi cotización <b data-cot-count>0</b></a>
     </nav>
   </div>
 </header>
 
 <div class="phead"><div class="wrap">
-  <div class="crumbs"><a href="index.html">Inicio</a> › Privacidad y términos</div>
+  <div class="crumbs"><a href="/">Inicio</a> › Privacidad y términos</div>
   <h1>Privacidad <em>y términos</em></h1>
 </div></div>
 
@@ -63,7 +60,7 @@
   </div>
 
   <h2>Qué datos recolectamos</h2>
-  <p>Solo los que tú escribes en el formulario de cotización: nombre, celular/WhatsApp, ciudad y, de forma opcional, empresa, correo, datos del vehículo y comentarios; además, los repuestos y cantidades que seleccionas. Guardamos también la fecha de la solicitud y la constancia de que aceptaste esta política. No recolectamos datos sensibles ni datos de menores de edad.</p>
+  <p>Solo los que tú escribes en el formulario de cotización: nombre, celular/WhatsApp, ciudad y, de forma opcional, empresa, correo, datos del vehículo, repuestos que no están en el catálogo y comentarios; además, los repuestos y cantidades que seleccionas. Guardamos también la fecha de la solicitud y la constancia de que aceptaste esta política. No recolectamos datos sensibles ni datos de menores de edad.</p>
 
   <h2>Para qué los usamos (finalidades)</h2>
   <ul>
@@ -105,15 +102,15 @@
   </ul>
 
   <h2>Seguridad</h2>
-  <p>El sitio funciona sobre HTTPS y la base de datos está configurada para que el público solo pueda <i>enviar</i> solicitudes; únicamente el responsable puede consultarlas.</p>
+  <p>El sitio funciona sobre HTTPS y la base de datos está configurada para que el público solo pueda <i>enviar</i> solicitudes; únicamente el responsable puede consultarlas, desde un panel privado protegido con usuario y contraseña.</p>
 
   <h2 id="cookies">Cookies y almacenamiento local</h2>
   <p>Este sitio <b>no usa cookies publicitarias, de analítica ni de seguimiento</b>. Solo usa el almacenamiento local de tu navegador (<i>localStorage</i>) para dos cosas estrictamente necesarias:</p>
   <ul>
-    <li>Recordar los repuestos que agregaste a “Mi cotización” mientras navegas.</li>
+    <li>Recordar los repuestos que agregaste a “Mi cotización” mientras navegas, y la lista de tu última cotización para que puedas repetirla (solo productos y cantidades, nunca tus datos personales).</li>
     <li>Recordar que ya cerraste el aviso de almacenamiento.</li>
   </ul>
-  <p>Esa información se queda en tu dispositivo y no se envía a nadie hasta que tú envías la cotización. Puedes borrarla en cualquier momento desde la configuración de tu navegador. Las tipografías del sitio se cargan desde Google Fonts, lo que implica que tu navegador se conecta a servidores de Google.</p>
+  <p>Esa información se queda en tu dispositivo y no se envía a nadie hasta que tú envías la cotización. Puedes borrarla en cualquier momento desde la configuración de tu navegador. Las tipografías, fotos y demás archivos se sirven desde nuestro propio sitio: tu navegador no se conecta a servicios de terceros mientras navegas.</p>
 
   <h2 id="terminos">Términos de uso del catálogo</h2>
   <ul>
@@ -124,19 +121,19 @@
   </ul>
 
   <h2>Vigencia y cambios</h2>
-  <p>Esta política rige desde el <span data-legal="vigencia"></span> (versión v1). Si la cambiamos de forma sustancial, lo publicaremos en esta página y, cuando la ley lo exija, pediremos de nuevo tu autorización.</p>
+  <p>Esta política rige desde el <span data-legal="vigencia"></span> (versión 1.1). Si la cambiamos de forma sustancial, lo publicaremos en esta página y, cuando la ley lo exija, pediremos de nuevo tu autorización.</p>
 </main>
 
 <footer>
   <div class="wrap">
-    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. · <a href="privacidad.html">Privacidad y términos</a></div>
+    <div class="legal">© <span data-year></span> Conexión Scania. Distribuidor independiente de repuestos; no es parte de Scania CV AB. · <a href="/privacidad">Privacidad y términos</a></div>
   </div>
 </footer>
 
-<script src="config.js"></script>
-<script src="productos.js"></script>
-<script src="app.js"></script>
-<script src="cotizacion.js"></script>
+<script src="/config.js"></script>
+<script src="/productos.js"></script>
+<script src="/app.js"></script>
+<script src="/cotizacion.js"></script>
 <script>
   const L = (window.CONFIG && CONFIG.legal) || {};
   document.querySelectorAll('[data-legal]').forEach(e => e.textContent = L[e.dataset.legal] || '');
