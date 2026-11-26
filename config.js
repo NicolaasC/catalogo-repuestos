@@ -8,7 +8,7 @@ window.CONFIG = {
   whatsapp: "573205530354",
   // Los productos y los destacados se gestionan desde el panel /admin (tabla "productos" en Supabase).
   // Dirección pública del sitio (para enlaces al compartir y para Google).
-  sitio: "https://catalogo-repuestos-eight.vercel.app",
+  sitio: "https://conexion-scania.vercel.app",
   // Sección "Por qué cotizar con nosotros" de la página de inicio.
   // ⚠ BORRADOR: confirma o corrige cada punto antes de publicar. Si dejas la lista vacía [], la sección no aparece.
   confianza: [

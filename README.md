@@ -2,7 +2,7 @@
 
 Catálogo web de repuestos para buses y camiones Scania con lista de cotización que se envía por WhatsApp y se guarda en Supabase.
 
-- **Sitio:** https://catalogo-repuestos-eight.vercel.app
+- **Sitio:** https://conexion-scania.vercel.app
 - **Diseño:** ver [`DESIGN.md`](DESIGN.md) (formato google-labs-code/design.md).
 - **Base de datos:** [`supabase/schema.sql`](supabase/schema.sql) (proyecto `catalogo-scania`).
 
