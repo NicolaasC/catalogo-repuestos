@@ -57,10 +57,28 @@ async function imagenOG(p){
     .jpeg({ quality: 82, mozjpeg: true }).toFile(join(DIST, 'og', p.id + '.jpg'));
 }
 
-// Vista previa genérica del sitio (para productos sin foto y páginas generales).
-await sharp(Buffer.from(`<svg width="1200" height="630"><rect width="1200" height="630" fill="#101D32"/>
-  <g transform="skewX(-25)">${[0, 1, 2, 3, 4].map(i => `<rect x="${980 + i * 34}" y="0" width="16" height="630" fill="#D62938" opacity=".85"/>`).join('')}</g>
-  <rect y="618" width="1200" height="12" fill="#D62938"/></svg>`)).jpeg({ quality: 82 }).toFile(join(DIST, 'og', 'sitio.jpg'));
+// ---------- Vista previa (Open Graph) de las páginas generales ----------
+// La imagen de marca es img/og-sitio.jpg (1200×630, JPG: WhatsApp no muestra AVIF ni WebP).
+const IMG_SITIO = '/img/og-sitio.jpg';
+const PAGINAS = { 'index.html': '/', 'catalogo.html': '/catalogo', 'privacidad.html': '/privacidad' };
+for (const [archivo, ruta] of Object.entries(PAGINAS)) {
+  const destino = join(DIST, archivo); let h = readFileSync(destino, 'utf8');
+  const titulo = h.match(/<title>([^<]*)<\/title>/)?.[1], desc = h.match(/<meta name="description" content="([^"]*)"/)?.[1];
+  if (!titulo || !desc) throw new Error(`${archivo} necesita <title> y <meta name="description">`);
+  h = h.replace('</head>', `<link rel="canonical" href="${SITIO}${ruta}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CO">
+<meta property="og:site_name" content="${esc(C.nombre)}">
+<meta property="og:title" content="${titulo}">
+<meta property="og:description" content="${desc}">
+<meta property="og:url" content="${SITIO}${ruta}">
+<meta property="og:image" content="${SITIO}${IMG_SITIO}">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(C.nombre)}: repuestos para buses y camiones">
+<meta name="twitter:card" content="summary_large_image">
+</head>`);
+  writeFileSync(destino, h);
+}
 
 // ---------- Página del producto ----------
 const nav = `<header class="top"><div class="wrap">
@@ -91,7 +109,7 @@ function pagina(p){
 <meta property="og:title" content="${esc(p.nombre + (p.referencia ? ' · Ref. ' + p.referencia : ''))}">
 <meta property="og:description" content="${esc(corto(p.descripcion || 'Repuesto para buses y camiones Scania. Cotiza por WhatsApp.', 200))}">
 <meta property="og:url" content="${esc(url)}">
-<meta property="og:image" content="${esc(SITIO + (existsSync(join(DIST, 'og', p.id + '.jpg')) ? '/og/' + p.id + '.jpg' : '/og/sitio.jpg'))}">
+<meta property="og:image" content="${esc(SITIO + (existsSync(join(DIST, 'og', p.id + '.jpg')) ? '/og/' + p.id + '.jpg' : IMG_SITIO))}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="/styles.css">
